@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\V1\ApiController;
 use App\Http\Requests\Api\Auth\ResetPasswordRequest;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 
-class ResetPasswordController extends Controller
+class ResetPasswordController extends ApiController
 {
     public function __invoke(ResetPasswordRequest $request): JsonResponse
     {
@@ -27,13 +27,9 @@ class ResetPasswordController extends Controller
         );
 
         if ($status !== Password::PASSWORD_RESET) {
-            return response()->json([
-                'message' => __($status),
-            ], 422);
+            return $this->error(__($status), 422);
         }
 
-        return response()->json([
-            'message' => __($status),
-        ]);
+        return $this->success(message: __($status));
     }
 }

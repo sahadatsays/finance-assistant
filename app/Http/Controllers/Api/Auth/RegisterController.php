@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Enums\LoginMethod;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\V1\ApiController;
 use App\Http\Requests\Api\Auth\RegisterRequest;
-use App\Http\Resources\UserResource;
+use App\Http\Resources\Api\AuthTokenResource;
 use App\Models\User;
 use App\Models\UserProfile;
 use App\Services\Auth\DeviceTrackingService;
 use App\Services\Auth\LoginHistoryService;
 use Illuminate\Http\JsonResponse;
 
-class RegisterController extends Controller
+class RegisterController extends ApiController
 {
     public function __construct(
         private DeviceTrackingService $deviceTracking,
@@ -45,13 +45,10 @@ class RegisterController extends Controller
 
         $this->loginHistory->recordSuccess($user, $request, LoginMethod::ApiToken, $device);
 
-        $user->load('profile');
-
-        return response()->json([
-            'message' => 'Registration successful. Please verify your email.',
-            'user' => new UserResource($user),
-            'token' => $token->plainTextToken,
-            'token_type' => 'Bearer',
-        ], 201);
+        return $this->success(
+            data: AuthTokenResource::toArray($user, $token->plainTextToken),
+            message: 'Registration successful. Please verify your email.',
+            status: 201,
+        );
     }
 }

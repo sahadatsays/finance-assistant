@@ -3,9 +3,9 @@
 namespace App\Http\Requests\Api\Auth;
 
 use App\Concerns\PasswordValidationRules;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\Api\ApiFormRequest;
 
-class ResetPasswordRequest extends FormRequest
+class ResetPasswordRequest extends ApiFormRequest
 {
     use PasswordValidationRules;
 

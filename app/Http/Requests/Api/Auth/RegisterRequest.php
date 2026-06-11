@@ -4,9 +4,9 @@ namespace App\Http\Requests\Api\Auth;
 
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\Api\ApiFormRequest;
 
-class RegisterRequest extends FormRequest
+class RegisterRequest extends ApiFormRequest
 {
     use PasswordValidationRules, ProfileValidationRules;
 

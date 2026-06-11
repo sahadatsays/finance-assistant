@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\V1\ApiController;
 use App\Http\Requests\Api\Auth\ForgotPasswordRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Password;
 
-class ForgotPasswordController extends Controller
+class ForgotPasswordController extends ApiController
 {
     public function __invoke(ForgotPasswordRequest $request): JsonResponse
     {
@@ -16,13 +16,9 @@ class ForgotPasswordController extends Controller
         );
 
         if ($status !== Password::RESET_LINK_SENT) {
-            return response()->json([
-                'message' => __($status),
-            ], 422);
+            return $this->error(__($status), 422);
         }
 
-        return response()->json([
-            'message' => __($status),
-        ]);
+        return $this->success(message: __($status));
     }
 }

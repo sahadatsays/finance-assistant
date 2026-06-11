@@ -29,4 +29,18 @@ REST API documentation for the Finance Assistant platform.
 | GET | `/api/v1` | No | API version and metadata |
 | GET | `/api/v1/health` | No | Health check |
 
-Feature endpoints (finance, categories, transactions, etc.) will be documented here as they are exposed.
+## Authentication Endpoints
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/v1/auth/register` | No | Register and receive token |
+| POST | `/api/v1/auth/login` | No | Login and receive token |
+| POST | `/api/v1/auth/logout` | Bearer | Revoke current token |
+| POST | `/api/v1/auth/forgot-password` | No | Send password reset link |
+| POST | `/api/v1/auth/reset-password` | No | Reset password with token |
+| GET | `/api/v1/auth/profile` | Bearer | Get authenticated user profile |
+| PUT | `/api/v1/auth/profile` | Bearer | Update profile |
+
+See [authentication.md](./v1/authentication.md) for request/response details.
+
+Finance feature endpoints will be documented here as they are exposed.

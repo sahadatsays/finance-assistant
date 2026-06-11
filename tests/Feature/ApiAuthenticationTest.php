@@ -18,11 +18,31 @@ test('api user can register and receive token', function () {
     ]);
 
     $response->assertCreated()
-        ->assertJsonStructure(['user', 'token', 'token_type']);
+        ->assertJson([
+            'success' => true,
+            'message' => 'Registration successful. Please verify your email.',
+        ])
+        ->assertJsonStructure([
+            'success',
+            'message',
+            'data' => [
+                'user' => ['id', 'name', 'email', 'email_verified', 'profile'],
+                'token',
+                'token_type',
+            ],
+            'meta',
+        ])
+        ->assertJsonPath('data.token_type', 'Bearer')
+        ->assertJsonPath('data.user.email', 'api@example.com')
+        ->assertJsonPath('data.user.email_verified', false);
 
     $this->assertDatabaseHas('users', ['email' => 'api@example.com']);
     $this->assertDatabaseHas('user_profiles', [
         'user_id' => User::query()->where('email', 'api@example.com')->value('id'),
+    ]);
+    $this->assertDatabaseHas('user_devices', [
+        'user_id' => User::query()->where('email', 'api@example.com')->value('id'),
+        'name' => 'Test Phone',
     ]);
 
     Notification::assertSentTo(
@@ -41,13 +61,22 @@ test('api user can login and receive token', function () {
     ]);
 
     $response->assertSuccessful()
-        ->assertJsonPath('user.email', $user->email)
-        ->assertJsonStructure(['token']);
+        ->assertJson([
+            'success' => true,
+            'message' => 'Login successful.',
+        ])
+        ->assertJsonPath('data.user.email', $user->email)
+        ->assertJsonPath('data.token_type', 'Bearer')
+        ->assertJsonStructure(['data' => ['token']]);
 
     $this->assertDatabaseHas('login_histories', [
         'user_id' => $user->id,
         'status' => 'success',
         'login_method' => 'api_token',
+    ]);
+    $this->assertDatabaseHas('user_devices', [
+        'user_id' => $user->id,
+        'name' => 'API Client',
     ]);
 });
 
@@ -59,7 +88,12 @@ test('api user cannot login with invalid credentials', function () {
         'password' => 'wrong-password',
     ]);
 
-    $response->assertUnprocessable();
+    $response->assertUnprocessable()
+        ->assertJson([
+            'success' => false,
+            'message' => 'The given data was invalid.',
+        ])
+        ->assertJsonStructure(['data' => ['errors' => ['email']]]);
 
     $this->assertDatabaseHas('login_histories', [
         'email' => $user->email,
@@ -74,7 +108,12 @@ test('api user can logout and revoke token', function () {
     $response = $this->withToken($token->plainTextToken)
         ->postJson(route('api.auth.logout'));
 
-    $response->assertSuccessful();
+    $response->assertSuccessful()
+        ->assertJson([
+            'success' => true,
+            'message' => 'Logged out successfully.',
+        ]);
+
     $this->assertDatabaseMissing('personal_access_tokens', ['id' => $token->accessToken->id]);
 });
 
@@ -87,7 +126,10 @@ test('api user can request password reset link', function () {
         'email' => $user->email,
     ]);
 
-    $response->assertSuccessful();
+    $response->assertSuccessful()
+        ->assertJson([
+            'success' => true,
+        ]);
 
     Notification::assertSentTo($user, ResetPassword::class);
 });
@@ -103,7 +145,10 @@ test('api user can reset password with valid token', function () {
         'password_confirmation' => 'new-password-12!',
     ]);
 
-    $response->assertSuccessful();
+    $response->assertSuccessful()
+        ->assertJson([
+            'success' => true,
+        ]);
 
     $this->assertTrue(
         auth()->guard('web')->attempt([
@@ -118,19 +163,27 @@ test('api profile can be viewed and updated by authenticated user', function () 
     $token = $user->createToken('test');
 
     $this->withToken($token->plainTextToken)
-        ->getJson(route('api.profile.show'))
+        ->getJson(route('api.auth.profile.show'))
         ->assertSuccessful()
-        ->assertJsonPath('user.email', $user->email);
+        ->assertJson([
+            'success' => true,
+            'message' => 'Profile retrieved successfully.',
+        ])
+        ->assertJsonPath('data.user.email', $user->email);
 
     $this->withToken($token->plainTextToken)
-        ->putJson(route('api.profile.update'), [
+        ->putJson(route('api.auth.profile.update'), [
             'name' => 'Updated Name',
             'email' => $user->email,
             'bio' => 'Finance enthusiast',
             'timezone' => 'America/New_York',
         ])
         ->assertSuccessful()
-        ->assertJsonPath('user.name', 'Updated Name');
+        ->assertJson([
+            'success' => true,
+            'message' => 'Profile updated successfully.',
+        ])
+        ->assertJsonPath('data.user.name', 'Updated Name');
 
     $this->assertDatabaseHas('user_profiles', [
         'user_id' => $user->id,
@@ -139,6 +192,39 @@ test('api profile can be viewed and updated by authenticated user', function () 
     ]);
 });
 
-test('api routes require authentication', function () {
-    $this->getJson(route('api.profile.show'))->assertUnauthorized();
+test('api auth profile requires authentication', function () {
+    $this->getJson(route('api.auth.profile.show'))->assertUnauthorized();
+});
+
+test('api user can check email verification status', function () {
+    $user = User::factory()->unverified()->create();
+    $token = $user->createToken('test');
+
+    $this->withToken($token->plainTextToken)
+        ->getJson(route('api.auth.verification.status'))
+        ->assertSuccessful()
+        ->assertJson([
+            'success' => true,
+            'data' => [
+                'verified' => false,
+                'email' => $user->email,
+            ],
+        ]);
+});
+
+test('api user can resend email verification', function () {
+    Notification::fake();
+
+    $user = User::factory()->unverified()->create();
+    $token = $user->createToken('test');
+
+    $this->withToken($token->plainTextToken)
+        ->postJson(route('api.auth.verification.resend'))
+        ->assertSuccessful()
+        ->assertJson([
+            'success' => true,
+            'message' => 'Verification link sent.',
+        ]);
+
+    Notification::assertSentTo($user, VerifyEmail::class);
 });

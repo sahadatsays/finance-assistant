@@ -82,7 +82,7 @@ Implemented in `App\Support\Api\ApiResponse` and consumed via `ApiController` pr
 |------|--------|------------|
 | `routes/api.php` | `/api` | `throttle:api`, `LogApiRequest` |
 | `routes/api/v1/foundation.php` | `/api/v1` | Public |
-| Auth routes in `api.php` | `/api/v1/auth` | `throttle:api-auth` on sensitive routes |
+| `routes/api/v1/auth.php` | `/api/v1/auth` | `throttle:api-auth` on sensitive routes |
 | `routes/tenant.php` | `/api/v1/tenants` | `auth:sanctum`, `verified`, tenant middleware |
 | `routes/admin.php` | `/api/v1/admin` | `auth:sanctum`, `verified`, `platform-admin` |
 
@@ -93,7 +93,7 @@ Future finance modules will add `routes/api/v1/finance.php` (or per-module route
 1. **URL versioning** — All routes live under `/api/v1`. Config in `config/api.php` lists supported versions.
 2. **Stable v1** — Current production API. Breaking changes require a new version prefix (`/api/v2`).
 3. **Foundation first** — New endpoints use `ApiController` + envelope from day one.
-4. **Legacy migration** — Existing auth/tenant/admin controllers retain their response shapes until migrated incrementally.
+4. **Legacy migration** — Auth controllers migrated to standard envelope (see STEP-02-API-AUTHENTICATION). Tenant/admin controllers retain legacy shapes until migrated.
 
 ## Exception Handling
 

@@ -20,6 +20,7 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+            'email_verified' => $this->hasVerifiedEmail(),
             'email_verified_at' => $this->email_verified_at,
             'profile' => new UserProfileResource($this->whenLoaded('profile')),
             'created_at' => $this->created_at,

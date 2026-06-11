@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Api\Auth;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\Api\ApiFormRequest;
 
-class LoginRequest extends FormRequest
+class LoginRequest extends ApiFormRequest
 {
     /**
      * @return array<string, mixed>

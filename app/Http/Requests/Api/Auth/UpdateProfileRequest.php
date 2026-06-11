@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests\Api;
+namespace App\Http\Requests\Api\Auth;
 
 use App\Concerns\ProfileValidationRules;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\Api\ApiFormRequest;
 
-class UpdateProfileRequest extends FormRequest
+class UpdateProfileRequest extends ApiFormRequest
 {
     use ProfileValidationRules;
 

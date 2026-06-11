@@ -61,7 +61,7 @@ it('returns standardized not found error envelope', function () {
 });
 
 it('returns standardized unauthenticated error envelope', function () {
-    $response = $this->getJson('/api/v1/profile');
+    $response = $this->getJson('/api/v1/auth/profile');
 
     $response->assertUnauthorized()
         ->assertJson([

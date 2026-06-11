@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Enums\LoginMethod;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\V1\ApiController;
 use App\Http\Requests\Api\Auth\LoginRequest;
-use App\Http\Resources\UserResource;
+use App\Http\Resources\Api\AuthTokenResource;
 use App\Models\User;
 use App\Services\Auth\DeviceTrackingService;
 use App\Services\Auth\LoginHistoryService;
@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
-class LoginController extends Controller
+class LoginController extends ApiController
 {
     public function __construct(
         private DeviceTrackingService $deviceTracking,
@@ -43,13 +43,9 @@ class LoginController extends Controller
 
         $this->loginHistory->recordSuccess($user, $request, LoginMethod::ApiToken, $device);
 
-        $user->load('profile');
-
-        return response()->json([
-            'message' => 'Login successful.',
-            'user' => new UserResource($user),
-            'token' => $token->plainTextToken,
-            'token_type' => 'Bearer',
-        ]);
+        return $this->success(
+            data: AuthTokenResource::toArray($user, $token->plainTextToken),
+            message: 'Login successful.',
+        );
     }
 }

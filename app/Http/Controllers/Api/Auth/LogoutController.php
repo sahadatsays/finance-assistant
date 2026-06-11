@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\V1\ApiController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class LogoutController extends Controller
+class LogoutController extends ApiController
 {
     public function __invoke(Request $request): JsonResponse
     {
@@ -20,8 +20,6 @@ class LogoutController extends Controller
             $token->delete();
         }
 
-        return response()->json([
-            'message' => 'Logged out successfully.',
-        ]);
+        return $this->success(message: 'Logged out successfully.');
     }
 }

@@ -1,22 +1,23 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Auth;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\UpdateProfileRequest;
+use App\Http\Controllers\Api\V1\ApiController;
+use App\Http\Requests\Api\Auth\UpdateProfileRequest;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class ProfileController extends Controller
+class ProfileController extends ApiController
 {
     public function show(Request $request): JsonResponse
     {
         $user = $request->user()->load('profile');
 
-        return response()->json([
-            'user' => new UserResource($user),
-        ]);
+        return $this->success(
+            data: ['user' => new UserResource($user)],
+            message: 'Profile retrieved successfully.',
+        );
     }
 
     public function update(UpdateProfileRequest $request): JsonResponse
@@ -47,9 +48,9 @@ class ProfileController extends Controller
             );
         }
 
-        return response()->json([
-            'message' => 'Profile updated successfully.',
-            'user' => new UserResource($user->load('profile')),
-        ]);
+        return $this->success(
+            data: ['user' => new UserResource($user->load('profile'))],
+            message: 'Profile updated successfully.',
+        );
     }
 }
