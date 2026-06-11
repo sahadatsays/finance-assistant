@@ -3,18 +3,23 @@
 namespace App\Services\Finance;
 
 use App\Models\Finance\Account;
-use App\Models\Finance\Budget;
 use App\Models\Finance\Goal;
 use App\Models\Finance\Transaction;
 use App\Models\Platform\Tenant;
 use App\Modules\Finance\Enums\AccountType;
+use App\Modules\Finance\Enums\BudgetPeriodType;
 use App\Modules\Finance\Enums\TransactionType;
+use App\Modules\Finance\Services\BudgetAnalyticsService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class TenantDashboardService
 {
+    public function __construct(
+        private BudgetAnalyticsService $budgetAnalytics,
+    ) {}
+
     /**
      * @return array{
      *     total_income: float,
@@ -105,14 +110,11 @@ class TenantDashboardService
      */
     private function budgetStatus(Tenant $tenant, Carbon $start, Carbon $end): array
     {
-        $budget = Budget::query()
-            ->where('tenant_id', $tenant->id)
-            ->where('period_start', '<=', $end)
-            ->where('period_end', '>=', $start)
-            ->orderByDesc('period_start')
-            ->first();
+        $budget = $this->budgetAnalytics->activeBudget($tenant, BudgetPeriodType::Monthly);
 
-        $budgeted = (float) ($budget?->amount ?? 0);
+        if ($budget !== null) {
+            return $this->budgetAnalytics->utilization($budget);
+        }
 
         $spent = (float) Transaction::query()
             ->where('tenant_id', $tenant->id)
@@ -120,13 +122,11 @@ class TenantDashboardService
             ->whereBetween('occurred_at', [$start, $end])
             ->sum('amount');
 
-        $percentage = $budgeted > 0 ? round(($spent / $budgeted) * 100, 1) : 0;
-
         return [
             'spent' => round($spent, 2),
-            'budgeted' => round($budgeted, 2),
-            'percentage' => $percentage,
-            'status' => $this->budgetAlertStatus($percentage),
+            'budgeted' => 0.0,
+            'percentage' => 0.0,
+            'status' => 'on_track',
         ];
     }
 
@@ -217,40 +217,17 @@ class TenantDashboardService
      */
     private function budgetAlerts(Tenant $tenant): array
     {
-        $now = Carbon::now();
-
-        return Budget::query()
-            ->with('lines.category')
-            ->where('tenant_id', $tenant->id)
-            ->where('period_start', '<=', $now)
-            ->where('period_end', '>=', $now)
-            ->get()
-            ->map(function (Budget $budget) use ($tenant): ?array {
-                $spent = (float) Transaction::query()
-                    ->where('tenant_id', $tenant->id)
-                    ->where('type', TransactionType::Expense)
-                    ->whereBetween('occurred_at', [$budget->period_start, $budget->period_end])
-                    ->sum('amount');
-
-                $budgeted = (float) $budget->amount;
-                $percentage = $budgeted > 0 ? round(($spent / $budgeted) * 100, 1) : 0;
-                $status = $this->budgetAlertStatus($percentage);
-
-                if ($status === 'on_track') {
-                    return null;
-                }
-
-                return [
-                    'id' => $budget->id,
-                    'name' => $budget->name,
-                    'spent' => round($spent, 2),
-                    'budgeted' => round($budgeted, 2),
-                    'percentage' => $percentage,
-                    'status' => $status,
-                ];
-            })
-            ->filter()
-            ->values()
+        return collect($this->budgetAnalytics->overspendingAlerts($tenant))
+            ->map(fn (array $alert): array => [
+                'id' => $alert['id'],
+                'name' => isset($alert['category'])
+                    ? "{$alert['name']} · {$alert['category']}"
+                    : $alert['name'],
+                'spent' => $alert['spent'],
+                'budgeted' => $alert['budgeted'],
+                'percentage' => $alert['percentage'],
+                'status' => $alert['status'],
+            ])
             ->all();
     }
 
@@ -306,15 +283,6 @@ class TenantDashboardService
             ->groupBy('month')
             ->pluck('total', 'month')
             ->all();
-    }
-
-    private function budgetAlertStatus(float $percentage): string
-    {
-        return match (true) {
-            $percentage >= 100 => 'over_budget',
-            $percentage >= 80 => 'warning',
-            default => 'on_track',
-        };
     }
 
     /**

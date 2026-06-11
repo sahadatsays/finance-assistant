@@ -26,4 +26,9 @@ enum TenantUserRole: string
     {
         return true;
     }
+
+    public function canManageBudgets(): bool
+    {
+        return $this === self::Owner;
+    }
 }

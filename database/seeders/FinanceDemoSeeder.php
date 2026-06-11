@@ -11,6 +11,7 @@ use App\Models\Finance\Transaction;
 use App\Models\Platform\Tenant;
 use App\Models\User;
 use App\Modules\Finance\Enums\AccountType;
+use App\Modules\Finance\Enums\BudgetPeriodType;
 use App\Modules\Finance\Enums\CategoryType;
 use App\Modules\Finance\Enums\TransactionType;
 use App\Modules\Finance\Services\SystemCategoryService;
@@ -132,12 +133,14 @@ class FinanceDemoSeeder extends Seeder
      */
     private function seedBudget(Tenant $tenant, Collection $categories, ?User $owner): void
     {
-        $budget = Budget::query()->create([
+        $monthly = Budget::query()->create([
             'tenant_id' => $tenant->id,
             'name' => 'Monthly Budget',
+            'period_type' => BudgetPeriodType::Monthly,
             'period_start' => Carbon::now()->startOfMonth(),
             'period_end' => Carbon::now()->endOfMonth(),
             'amount' => 3500.00,
+            'is_active' => true,
             'created_by' => $owner?->id,
         ]);
 
@@ -152,7 +155,33 @@ class FinanceDemoSeeder extends Seeder
 
         foreach ($lines as $name => $amount) {
             BudgetLine::query()->create([
-                'budget_id' => $budget->id,
+                'budget_id' => $monthly->id,
+                'category_id' => $categories[$name]->id,
+                'amount' => $amount,
+            ]);
+        }
+
+        $weekly = Budget::query()->create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Weekly Budget',
+            'period_type' => BudgetPeriodType::Weekly,
+            'period_start' => Carbon::now()->startOfWeek(),
+            'period_end' => Carbon::now()->endOfWeek(),
+            'amount' => 800.00,
+            'is_active' => true,
+            'created_by' => $owner?->id,
+        ]);
+
+        $weeklyLines = [
+            'Groceries' => 150,
+            'Transport' => 75,
+            'Entertainment' => 50,
+            'Healthcare' => 25,
+        ];
+
+        foreach ($weeklyLines as $name => $amount) {
+            BudgetLine::query()->create([
+                'budget_id' => $weekly->id,
                 'category_id' => $categories[$name]->id,
                 'amount' => $amount,
             ]);

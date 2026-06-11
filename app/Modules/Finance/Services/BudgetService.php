@@ -1,0 +1,202 @@
+<?php
+
+namespace App\Modules\Finance\Services;
+
+use App\Models\Finance\Budget;
+use App\Models\Finance\BudgetLine;
+use App\Models\Finance\Category;
+use App\Models\Platform\Tenant;
+use App\Models\User;
+use App\Modules\Finance\Enums\BudgetPeriodType;
+use App\Modules\Finance\Enums\CategoryType;
+use App\Services\Platform\ActivityLogService;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
+
+class BudgetService
+{
+    public function __construct(
+        private ActivityLogService $activityLog,
+        private BudgetAnalyticsService $analytics,
+    ) {}
+
+    /**
+     * @return Collection<int, Budget>
+     */
+    public function listForTenant(Tenant $tenant): Collection
+    {
+        return Budget::query()
+            ->with('lines.category')
+            ->where('tenant_id', $tenant->id)
+            ->where('is_active', true)
+            ->orderByDesc('period_start')
+            ->get();
+    }
+
+    /**
+     * @param  array{
+     *     name: string,
+     *     period_type: string,
+     *     period_start?: string,
+     *     amount?: float|string,
+     *     lines: list<array{category_id: int, amount: float|string}>
+     * }  $data
+     */
+    public function create(Tenant $tenant, array $data, User $user): Budget
+    {
+        return DB::transaction(function () use ($tenant, $data, $user): Budget {
+            $periodType = BudgetPeriodType::from($data['period_type']);
+            $period = $this->resolvePeriod($periodType, $data['period_start'] ?? null);
+
+            $this->validateLines($tenant, $data['lines']);
+
+            $totalAmount = isset($data['amount'])
+                ? (float) $data['amount']
+                : collect($data['lines'])->sum(fn ($line) => (float) $line['amount']);
+
+            $budget = Budget::query()->create([
+                'tenant_id' => $tenant->id,
+                'name' => $data['name'],
+                'period_type' => $periodType,
+                'period_start' => $period['start'],
+                'period_end' => $period['end'],
+                'amount' => $totalAmount,
+                'is_active' => true,
+                'created_by' => $user->id,
+            ]);
+
+            $this->syncLines($budget, $data['lines']);
+
+            $this->activityLog->log(
+                "Budget \"{$budget->name}\" was created.",
+                logName: 'finance',
+                subject: $budget,
+                causer: $user,
+                tenant: $tenant,
+                properties: ['period_type' => $periodType->value],
+            );
+
+            return $budget->load('lines.category');
+        });
+    }
+
+    /**
+     * @param  array{
+     *     name?: string,
+     *     amount?: float|string,
+     *     lines?: list<array{category_id: int, amount: float|string}>
+     * }  $data
+     */
+    public function update(Budget $budget, array $data, User $user): Budget
+    {
+        return DB::transaction(function () use ($budget, $data, $user): Budget {
+            if (isset($data['lines'])) {
+                $this->validateLines($budget->tenant, $data['lines']);
+                $this->syncLines($budget, $data['lines']);
+
+                if (! isset($data['amount'])) {
+                    $data['amount'] = collect($data['lines'])->sum(fn ($line) => (float) $line['amount']);
+                }
+            }
+
+            $budget->update(array_filter([
+                'name' => $data['name'] ?? null,
+                'amount' => $data['amount'] ?? null,
+            ], fn ($value) => $value !== null));
+
+            $this->activityLog->log(
+                "Budget \"{$budget->name}\" was updated.",
+                logName: 'finance',
+                subject: $budget,
+                causer: $user,
+                tenant: $budget->tenant,
+            );
+
+            return $budget->fresh(['lines.category']);
+        });
+    }
+
+    public function delete(Budget $budget, User $user): void
+    {
+        DB::transaction(function () use ($budget, $user): void {
+            $name = $budget->name;
+            $tenant = $budget->tenant;
+
+            $budget->lines()->delete();
+            $budget->delete();
+
+            $this->activityLog->log(
+                "Budget \"{$name}\" was deleted.",
+                logName: 'finance',
+                causer: $user,
+                tenant: $tenant,
+            );
+        });
+    }
+
+    /**
+     * @param  list<array{category_id: int, amount: float|string}>  $lines
+     */
+    private function syncLines(Budget $budget, array $lines): void
+    {
+        $budget->lines()->delete();
+
+        foreach ($lines as $line) {
+            BudgetLine::query()->create([
+                'budget_id' => $budget->id,
+                'category_id' => $line['category_id'],
+                'amount' => $line['amount'],
+            ]);
+        }
+    }
+
+    /**
+     * @param  list<array{category_id: int, amount: float|string}>  $lines
+     */
+    private function validateLines(Tenant $tenant, array $lines): void
+    {
+        if (count($lines) === 0) {
+            throw new InvalidArgumentException('At least one category budget line is required.');
+        }
+
+        foreach ($lines as $line) {
+            $valid = Category::query()
+                ->where('tenant_id', $tenant->id)
+                ->where('id', $line['category_id'])
+                ->where('type', CategoryType::Expense)
+                ->where('is_active', true)
+                ->exists();
+
+            if (! $valid) {
+                throw new InvalidArgumentException('Invalid expense category selected.');
+            }
+
+            if ((float) $line['amount'] <= 0) {
+                throw new InvalidArgumentException('Category budget amounts must be greater than zero.');
+            }
+        }
+    }
+
+    /**
+     * @return array{start: Carbon, end: Carbon}
+     */
+    private function resolvePeriod(BudgetPeriodType $type, ?string $startDate): array
+    {
+        $start = $startDate !== null
+            ? Carbon::parse($startDate)->startOfDay()
+            : now()->startOfDay();
+
+        return match ($type) {
+            BudgetPeriodType::Monthly => [
+                'start' => $start->copy()->startOfMonth(),
+                'end' => $start->copy()->endOfMonth(),
+            ],
+            BudgetPeriodType::Weekly => [
+                'start' => $start->copy()->startOfWeek(),
+                'end' => $start->copy()->endOfWeek(),
+            ],
+        };
+    }
+}
