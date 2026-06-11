@@ -95,8 +95,15 @@ class CategoryService
      */
     public function update(Category $category, array $data, User $user): Category
     {
-        if ($category->is_system) {
-            $data = array_intersect_key($data, array_flip(['color', 'icon']));
+        if (isset($data['name']) && $data['name'] !== $category->name) {
+            if (Category::query()
+                ->where('tenant_id', $category->tenant_id)
+                ->where('type', $category->type)
+                ->where('name', $data['name'])
+                ->where('id', '!=', $category->id)
+                ->exists()) {
+                throw new InvalidArgumentException('A category with this name already exists for the selected type.');
+            }
         }
 
         $category->update($data);

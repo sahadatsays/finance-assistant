@@ -35,6 +35,7 @@ class CategoryController extends Controller
         $this->categories->ensureSystemCategories($tenant);
 
         $includeArchived = $request->boolean('archived');
+        $type = $request->query('type', 'income');
         $categories = $includeArchived
             ? $this->categories->listArchivedForTenant($tenant)
             : $this->categories->listForTenant($tenant);
@@ -47,6 +48,7 @@ class CategoryController extends Controller
             'categories' => CategoryResource::collection($categories)->resolve(),
             'filters' => [
                 'archived' => $includeArchived,
+                'type' => in_array($type, ['income', 'expense'], true) ? $type : 'income',
             ],
             'permissions' => $this->permissionMap($request, $tenant),
         ]);
@@ -63,7 +65,9 @@ class CategoryController extends Controller
             return back()->withErrors(['name' => $exception->getMessage()])->withInput();
         }
 
-        return redirect()->route('categories.index');
+        return redirect()->route('categories.index', [
+            'type' => $request->validated('type'),
+        ]);
     }
 
     public function update(UpdateCategoryRequest $request, Category $category): RedirectResponse
@@ -72,9 +76,15 @@ class CategoryController extends Controller
         $this->assertCategoryBelongsToTenant($category, $tenant);
         $this->authorize('update', $category);
 
-        $this->categories->update($category, $request->validated(), $request->user());
+        try {
+            $this->categories->update($category, $request->validated(), $request->user());
+        } catch (InvalidArgumentException $exception) {
+            return back()->withErrors(['name' => $exception->getMessage()])->withInput();
+        }
 
-        return redirect()->route('categories.index');
+        return redirect()->route('categories.index', [
+            'type' => $category->type->value,
+        ]);
     }
 
     public function destroy(Request $request, Category $category): RedirectResponse
@@ -89,7 +99,9 @@ class CategoryController extends Controller
             return back()->withErrors(['category' => $exception->getMessage()]);
         }
 
-        return redirect()->route('categories.index');
+        return redirect()->route('categories.index', [
+            'type' => $this->resolveRedirectType($request, $category),
+        ]);
     }
 
     public function archive(Request $request, Category $category): RedirectResponse
@@ -100,7 +112,9 @@ class CategoryController extends Controller
 
         $this->categories->archive($category, $request->user());
 
-        return redirect()->route('categories.index');
+        return redirect()->route('categories.index', [
+            'type' => $this->resolveRedirectType($request, $category),
+        ]);
     }
 
     public function restore(Request $request, Category $category): RedirectResponse
@@ -112,6 +126,13 @@ class CategoryController extends Controller
         $this->categories->restore($category, $request->user());
 
         return redirect()->route('categories.index', ['archived' => 1]);
+    }
+
+    private function resolveRedirectType(Request $request, Category $category): string
+    {
+        $type = $request->input('type', $category->type->value);
+
+        return in_array($type, ['income', 'expense'], true) ? $type : $category->type->value;
     }
 
     /**

@@ -1,4 +1,4 @@
-import { Form, Head, Link, router } from '@inertiajs/react';
+import { Form, Head, router } from '@inertiajs/react';
 import CategoryController from '@/actions/App/Http/Controllers/Finance/CategoryController';
 import CategoryIcon from '@/components/categories/category-icon';
 import CategoryIconPicker from '@/components/categories/category-icon-picker';
@@ -16,7 +16,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -57,11 +56,19 @@ type Permissions = {
 type Props = {
     tenant: { id: number; name: string };
     categories: Category[];
-    filters: { archived: boolean };
+    filters: { archived: boolean; type: 'income' | 'expense' };
     permissions: Permissions;
 };
 
 type Tab = 'income' | 'expense' | 'archived';
+
+function resolveTab(filters: Props['filters']): Tab {
+    if (filters.archived) {
+        return 'archived';
+    }
+
+    return filters.type;
+}
 
 export default function CategoriesIndex({
     tenant,
@@ -69,8 +76,18 @@ export default function CategoriesIndex({
     filters,
     permissions,
 }: Props) {
-    const [tab, setTab] = useState<Tab>(filters.archived ? 'archived' : 'income');
+    const tab = resolveTab(filters);
     const [editing, setEditing] = useState<Category | null>(null);
+
+    const switchTab = (next: Tab) => {
+        if (next === 'archived') {
+            router.get(categoriesIndex.url({ query: { archived: 1 } }));
+
+            return;
+        }
+
+        router.get(categoriesIndex.url({ query: { type: next } }));
+    };
 
     const filtered = useMemo(() => {
         if (tab === 'archived') {
@@ -82,6 +99,23 @@ export default function CategoriesIndex({
 
     const systemCount = filtered.filter((c) => c.is_system).length;
     const customCount = filtered.filter((c) => !c.is_system).length;
+
+    const archiveCategory = (category: Category) => {
+        router.post(
+            CategoryController.archive.url(category.id),
+            { type: category.type },
+        );
+    };
+
+    const restoreCategory = (category: Category) => {
+        router.post(CategoryController.restore.url(category.id));
+    };
+
+    const deleteCategory = (category: Category) => {
+        router.delete(CategoryController.destroy.url(category.id), {
+            data: { type: category.type },
+        });
+    };
 
     return (
         <>
@@ -103,18 +137,7 @@ export default function CategoriesIndex({
                                     key={t}
                                     variant={tab === t ? 'brand' : 'outline'}
                                     size="sm"
-                                    onClick={() => {
-                                        setTab(t);
-                                        if (t === 'archived') {
-                                            router.get(
-                                                categoriesIndex.url({
-                                                    query: { archived: 1 },
-                                                }),
-                                            );
-                                        } else {
-                                            router.get(categoriesIndex.url());
-                                        }
-                                    }}
+                                    onClick={() => switchTab(t)}
                                 >
                                     {t === 'income'
                                         ? 'Income'
@@ -186,140 +209,58 @@ export default function CategoriesIndex({
                             </CardHeader>
                             <CardContent className="flex flex-wrap gap-2">
                                 {permissions.update && category.is_active && (
-                                    <Dialog
-                                        open={
-                                            editing?.id === category.id
-                                        }
-                                        onOpenChange={(open) =>
-                                            !open && setEditing(null)
-                                        }
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setEditing(category)}
                                     >
-                                        <DialogTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() =>
-                                                    setEditing(category)
-                                                }
-                                            >
-                                                <Pencil className="mr-1 size-3" />
-                                                Edit
-                                            </Button>
-                                        </DialogTrigger>
-                                        <DialogContent>
-                                            <DialogHeader>
-                                                <DialogTitle>
-                                                    Edit {category.name}
-                                                </DialogTitle>
-                                            </DialogHeader>
-                                            <Form
-                                                {...CategoryController.update.form(
-                                                    category.id,
-                                                )}
-                                                className="grid gap-4"
-                                                onSuccess={() =>
-                                                    setEditing(null)
-                                                }
-                                            >
-                                                {({
-                                                    processing,
-                                                    errors,
-                                                }) => (
-                                                    <>
-                                                        {!category.is_system && (
-                                                            <div className="grid gap-2">
-                                                                <Label>
-                                                                    Name
-                                                                </Label>
-                                                                <Input
-                                                                    name="name"
-                                                                    defaultValue={
-                                                                        category.name
-                                                                    }
-                                                                    required
-                                                                />
-                                                                {errors.name && (
-                                                                    <p className="text-sm text-destructive">
-                                                                        {
-                                                                            errors.name
-                                                                        }
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                        <div className="grid gap-2">
-                                                            <Label>Color</Label>
-                                                            <Input
-                                                                name="color"
-                                                                type="color"
-                                                                defaultValue={
-                                                                    category.color
-                                                                }
-                                                                required
-                                                            />
-                                                        </div>
-                                                        <CategoryIconPicker
-                                                            defaultValue={
-                                                                category.icon
-                                                            }
-                                                        />
-                                                        <Button
-                                                            type="submit"
-                                                            variant="brand"
-                                                            disabled={
-                                                                processing
-                                                            }
-                                                        >
-                                                            Save Changes
-                                                        </Button>
-                                                    </>
-                                                )}
-                                            </Form>
-                                        </DialogContent>
-                                    </Dialog>
+                                        <Pencil className="mr-1 size-3" />
+                                        Edit
+                                    </Button>
                                 )}
                                 {permissions.archive &&
                                     category.is_active && (
-                                        <Link
-                                            href={CategoryController.archive.url(
-                                                category.id,
-                                            )}
-                                            method="post"
-                                            as="button"
-                                            className="inline-flex h-8 items-center rounded-md border px-3 text-sm hover:bg-muted"
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                                archiveCategory(category)
+                                            }
                                         >
                                             <Archive className="mr-1 size-3" />
                                             Archive
-                                        </Link>
+                                        </Button>
                                     )}
                                 {permissions.restore &&
                                     !category.is_active && (
-                                        <Link
-                                            href={CategoryController.restore.url(
-                                                category.id,
-                                            )}
-                                            method="post"
-                                            as="button"
-                                            className="inline-flex h-8 items-center rounded-md border px-3 text-sm hover:bg-muted"
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                                restoreCategory(category)
+                                            }
                                         >
                                             <ArchiveRestore className="mr-1 size-3" />
                                             Restore
-                                        </Link>
+                                        </Button>
                                     )}
                                 {permissions.delete &&
                                     !category.is_system &&
                                     category.is_active && (
-                                        <Link
-                                            href={CategoryController.destroy.url(
-                                                category.id,
-                                            )}
-                                            method="delete"
-                                            as="button"
-                                            className="inline-flex h-8 items-center rounded-md border border-rose-200 px-3 text-sm text-rose-600 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-400 dark:hover:bg-rose-950"
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            className="border-rose-200 text-rose-600 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-400 dark:hover:bg-rose-950"
+                                            onClick={() =>
+                                                deleteCategory(category)
+                                            }
                                         >
                                             <Trash2 className="mr-1 size-3" />
                                             Delete
-                                        </Link>
+                                        </Button>
                                     )}
                             </CardContent>
                         </Card>
@@ -398,6 +339,61 @@ export default function CategoriesIndex({
                     </Card>
                 )}
             </div>
+
+            {editing && (
+                <Dialog
+                    open={editing !== null}
+                    onOpenChange={(open) => !open && setEditing(null)}
+                >
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Edit {editing.name}</DialogTitle>
+                        </DialogHeader>
+                        <Form
+                            {...CategoryController.update.form(editing.id)}
+                            className="grid gap-4"
+                            onSuccess={() => setEditing(null)}
+                        >
+                            {({ processing, errors }) => (
+                                <>
+                                    <div className="grid gap-2">
+                                        <Label>Name</Label>
+                                        <Input
+                                            name="name"
+                                            defaultValue={editing.name}
+                                            required
+                                        />
+                                        {errors.name && (
+                                            <p className="text-sm text-destructive">
+                                                {errors.name}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label>Color</Label>
+                                        <Input
+                                            name="color"
+                                            type="color"
+                                            defaultValue={editing.color}
+                                            required
+                                        />
+                                    </div>
+                                    <CategoryIconPicker
+                                        defaultValue={editing.icon}
+                                    />
+                                    <Button
+                                        type="submit"
+                                        variant="brand"
+                                        disabled={processing}
+                                    >
+                                        Save Changes
+                                    </Button>
+                                </>
+                            )}
+                        </Form>
+                    </DialogContent>
+                </Dialog>
+            )}
         </>
     );
 }

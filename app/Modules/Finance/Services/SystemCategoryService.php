@@ -32,18 +32,17 @@ class SystemCategoryService
     public function seedForTenant(Tenant $tenant): void
     {
         foreach (self::DEFINITIONS as $definition) {
-            Category::query()->updateOrCreate(
+            Category::query()->firstOrCreate(
                 [
                     'tenant_id' => $tenant->id,
                     'name' => $definition['name'],
                     'type' => $definition['type'],
+                    'is_system' => true,
                 ],
                 [
                     'color' => $definition['color'],
                     'icon' => $definition['icon'],
-                    'is_system' => true,
                     'is_active' => true,
-                    'archived_at' => null,
                 ],
             );
         }

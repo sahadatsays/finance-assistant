@@ -71,7 +71,7 @@ test('tenant owner can create custom category', function () {
             'color' => '#22c55e',
             'icon' => 'wallet',
         ])
-        ->assertRedirect(route('categories.index'));
+        ->assertRedirect(route('categories.index', ['type' => 'income']));
 
     $this->assertDatabaseHas('categories', [
         'name' => 'Side Hustle',
@@ -85,7 +85,7 @@ test('tenant owner can create custom category', function () {
     ]);
 });
 
-test('tenant owner can update custom category and system category color', function () {
+test('tenant owner can rename system and custom categories', function () {
     $owner = User::query()->where('email', 'owner@acme.com')->firstOrFail();
     $tenant = Tenant::query()->where('slug', 'acme-corp')->firstOrFail();
 
@@ -97,7 +97,7 @@ test('tenant owner can update custom category and system category color', functi
             'name' => 'Office Rent',
             'color' => '#111111',
         ])
-        ->assertRedirect(route('categories.index'));
+        ->assertRedirect(route('categories.index', ['type' => 'expense']));
 
     expect($custom->fresh()->name)->toBe('Office Rent');
 
@@ -106,9 +106,9 @@ test('tenant owner can update custom category and system category color', functi
             'name' => 'Renamed Salary',
             'color' => '#222222',
         ])
-        ->assertRedirect(route('categories.index'));
+        ->assertRedirect(route('categories.index', ['type' => 'income']));
 
-    expect($system->fresh()->name)->toBe('Salary')
+    expect($system->fresh()->name)->toBe('Renamed Salary')
         ->and($system->fresh()->color)->toBe('#222222');
 });
 
@@ -121,8 +121,19 @@ test('tenant owner can archive and restore category', function () {
         ->firstOrFail();
 
     $this->actingAs($owner)
-        ->post(route('categories.archive', $category))
-        ->assertRedirect(route('categories.index'));
+        ->post(route('categories.archive', $category), ['type' => 'expense'])
+        ->assertRedirect(route('categories.index', ['type' => 'expense']));
+
+    expect($category->fresh()->is_active)->toBeFalse();
+
+    $this->actingAs($owner)
+        ->get(route('categories.index', ['type' => 'expense']))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->has('categories', 15)
+            ->where('categories', fn ($categories) => collect($categories)
+                ->where('name', 'Insurance')
+                ->isEmpty()));
 
     expect($category->fresh()->is_active)->toBeFalse();
 
@@ -175,7 +186,7 @@ test('custom category without transactions can be deleted', function () {
 
     $this->actingAs($owner)
         ->delete(route('categories.destroy', $category))
-        ->assertRedirect(route('categories.index'));
+        ->assertRedirect(route('categories.index', ['type' => 'expense']));
 
     $this->assertDatabaseMissing('categories', ['id' => $category->id]);
 
