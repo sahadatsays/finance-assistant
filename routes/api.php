@@ -16,6 +16,7 @@ Route::middleware('throttle:api')->group(function (): void {
         require __DIR__.'/api/v1/goals.php';
         require __DIR__.'/api/v1/attachments.php';
         require __DIR__.'/api/v1/reports.php';
+        require __DIR__.'/api/v1/bills.php';
 
         Route::middleware(['auth:sanctum', 'verified'])->group(function (): void {
             Route::get('devices', [DeviceController::class, 'index'])->name('api.devices.index');

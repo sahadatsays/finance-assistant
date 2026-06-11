@@ -126,4 +126,15 @@ See [attachments.md](./v1/attachments.md).
 
 See [reports.md](./v1/reports.md).
 
+## Bills
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/bills` | Bearer + verified | List bills |
+| GET | `/api/v1/bills/upcoming` | Bearer + verified | Upcoming bills |
+| POST | `/api/v1/bills` | Bearer + verified | Create bill |
+| PUT | `/api/v1/bills/{id}` | Bearer + verified | Update bill |
+| DELETE | `/api/v1/bills/{id}` | Bearer + verified | Delete bill |
+| POST | `/api/v1/bills/{id}/mark-paid` | Bearer + verified | Mark bill paid |
+
 Additional finance feature endpoints will be documented here as they are exposed.
