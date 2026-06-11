@@ -137,4 +137,45 @@ See [reports.md](./v1/reports.md).
 | DELETE | `/api/v1/bills/{id}` | Bearer + verified | Delete bill |
 | POST | `/api/v1/bills/{id}/mark-paid` | Bearer + verified | Mark bill paid |
 
-Additional finance feature endpoints will be documented here as they are exposed.
+## Accounts & Net Worth
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/accounts` | Bearer + verified | List accounts |
+| POST | `/api/v1/accounts` | Bearer + verified (owner) | Create account |
+| PUT | `/api/v1/accounts/{id}` | Bearer + verified (owner) | Update account |
+| DELETE | `/api/v1/accounts/{id}` | Bearer + verified (owner) | Delete account |
+| GET | `/api/v1/net-worth` | Bearer + verified | Current net worth |
+| GET | `/api/v1/net-worth/history` | Bearer + verified | Net worth history |
+
+## Investments
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/investments` | Bearer + verified | List investments |
+| POST | `/api/v1/investments` | Bearer + verified | Create investment |
+| PUT | `/api/v1/investments/{id}` | Bearer + verified | Update investment |
+| DELETE | `/api/v1/investments/{id}` | Bearer + verified | Delete investment |
+| GET | `/api/v1/portfolio/performance` | Bearer + verified | Portfolio performance |
+| GET | `/api/v1/portfolio/allocation` | Bearer + verified | Portfolio allocation |
+
+## Notifications
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/notifications` | Bearer + verified | List notifications |
+| POST | `/api/v1/notifications/read` | Bearer + verified | Mark notifications read |
+| POST | `/api/v1/device-token` | Bearer + verified | Register push token |
+| DELETE | `/api/v1/device-token` | Bearer + verified | Remove push token |
+
+## Mobile Sync (Flutter)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/sync/transactions?since=` | Bearer + verified | Delta sync transactions |
+| GET | `/api/v1/sync/budgets?since=` | Bearer + verified | Delta sync budgets |
+| GET | `/api/v1/sync/goals?since=` | Bearer + verified | Delta sync goals |
+| GET | `/api/v1/sync/dashboard?since=` | Bearer + verified | Dashboard snapshot |
+| GET | `/api/v1/sync/notifications?since=` | Bearer + verified | Delta sync notifications |
+
+All sync responses include `items`, `deleted_ids`, `synced_at`, and `meta.server_time` for offline/mobile clients.
