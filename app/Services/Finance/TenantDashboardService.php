@@ -10,6 +10,7 @@ use App\Modules\Finance\Enums\AccountType;
 use App\Modules\Finance\Enums\BudgetPeriodType;
 use App\Modules\Finance\Enums\TransactionType;
 use App\Modules\Finance\Services\BudgetAnalyticsService;
+use App\Modules\Finance\Services\GoalAnalyticsService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,7 @@ class TenantDashboardService
 {
     public function __construct(
         private BudgetAnalyticsService $budgetAnalytics,
+        private GoalAnalyticsService $goalAnalytics,
     ) {}
 
     /**
@@ -236,26 +238,16 @@ class TenantDashboardService
      */
     private function savingsGoals(Tenant $tenant): array
     {
-        return Goal::query()
-            ->where('tenant_id', $tenant->id)
-            ->where('is_active', true)
-            ->orderBy('target_date')
-            ->get()
-            ->map(function (Goal $goal): array {
-                $target = (float) $goal->target_amount;
-                $current = (float) $goal->current_amount;
-                $percentage = $target > 0 ? round(($current / $target) * 100, 1) : 0;
-
-                return [
-                    'id' => $goal->id,
-                    'name' => $goal->name,
-                    'current_amount' => round($current, 2),
-                    'target_amount' => round($target, 2),
-                    'percentage' => min($percentage, 100),
-                    'color' => $goal->color,
-                    'target_date' => $goal->target_date?->toDateString(),
-                ];
-            })
+        return collect($this->goalAnalytics->widgetGoals($tenant))
+            ->map(fn (array $goal): array => [
+                'id' => $goal['id'],
+                'name' => $goal['name'],
+                'current_amount' => $goal['current_amount'],
+                'target_amount' => $goal['target_amount'],
+                'percentage' => $goal['progress']['percentage'],
+                'color' => $goal['color'],
+                'target_date' => $goal['target_date'],
+            ])
             ->all();
     }
 

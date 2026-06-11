@@ -6,6 +6,7 @@ import {
     LayoutGrid,
     PieChart,
     Tags,
+    Target,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -21,6 +22,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { index as budgetsIndex } from '@/routes/budgets';
+import { index as goalsIndex } from '@/routes/goals';
 import { index as categoriesIndex } from '@/routes/categories';
 import { index as transactionsIndex } from '@/routes/transactions';
 import { dashboard } from '@/routes';
@@ -46,6 +48,11 @@ const mainNavItems: NavItem[] = [
         title: 'Budgets',
         href: budgetsIndex(),
         icon: PieChart,
+    },
+    {
+        title: 'Savings Goals',
+        href: goalsIndex(),
+        icon: Target,
     },
 ];
 

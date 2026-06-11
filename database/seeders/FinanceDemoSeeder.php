@@ -7,12 +7,14 @@ use App\Models\Finance\Budget;
 use App\Models\Finance\BudgetLine;
 use App\Models\Finance\Category;
 use App\Models\Finance\Goal;
+use App\Models\Finance\GoalContribution;
 use App\Models\Finance\Transaction;
 use App\Models\Platform\Tenant;
 use App\Models\User;
 use App\Modules\Finance\Enums\AccountType;
 use App\Modules\Finance\Enums\BudgetPeriodType;
 use App\Modules\Finance\Enums\CategoryType;
+use App\Modules\Finance\Enums\GoalType;
 use App\Modules\Finance\Enums\TransactionType;
 use App\Modules\Finance\Services\SystemCategoryService;
 use Illuminate\Database\Seeder;
@@ -190,34 +192,74 @@ class FinanceDemoSeeder extends Seeder
 
     private function seedGoals(Tenant $tenant, ?User $owner): void
     {
-        Goal::query()->create([
-            'tenant_id' => $tenant->id,
-            'name' => 'Vacation Fund',
-            'target_amount' => 5000,
-            'current_amount' => 3200,
-            'target_date' => Carbon::now()->addMonths(4),
-            'color' => '#8b5cf6',
-            'created_by' => $owner?->id,
-        ]);
+        $goals = [
+            [
+                'name' => 'Emergency Fund',
+                'type' => GoalType::EmergencyFund,
+                'target' => 10000,
+                'current' => 6500,
+                'target_date' => Carbon::now()->addMonths(6),
+                'contributions' => [2000, 1500, 1500, 1500],
+            ],
+            [
+                'name' => 'Japan Trip',
+                'type' => GoalType::Travel,
+                'target' => 5000,
+                'current' => 3200,
+                'target_date' => Carbon::now()->addMonths(4),
+                'contributions' => [800, 1200, 1200],
+            ],
+            [
+                'name' => 'MBA Course',
+                'type' => GoalType::Education,
+                'target' => 8000,
+                'current' => 2400,
+                'target_date' => Carbon::now()->addMonths(8),
+                'contributions' => [800, 800, 800],
+            ],
+            [
+                'name' => 'New Laptop',
+                'type' => GoalType::Purchase,
+                'target' => 2000,
+                'current' => 1450,
+                'target_date' => Carbon::now()->addMonths(2),
+                'contributions' => [450, 500, 500],
+            ],
+            [
+                'name' => 'Home Down Payment',
+                'type' => GoalType::Custom,
+                'target' => 50000,
+                'current' => 8500,
+                'target_date' => Carbon::now()->addYears(2),
+                'contributions' => [2500, 3000, 3000],
+            ],
+        ];
 
-        Goal::query()->create([
-            'tenant_id' => $tenant->id,
-            'name' => 'New Laptop',
-            'target_amount' => 2000,
-            'current_amount' => 1450,
-            'target_date' => Carbon::now()->addMonths(2),
-            'color' => '#06b6d4',
-            'created_by' => $owner?->id,
-        ]);
+        foreach ($goals as $data) {
+            $goal = Goal::query()->create([
+                'tenant_id' => $tenant->id,
+                'name' => $data['name'],
+                'type' => $data['type'],
+                'target_amount' => $data['target'],
+                'current_amount' => 0,
+                'target_date' => $data['target_date'],
+                'color' => $data['type']->defaultColor(),
+                'created_by' => $owner?->id,
+            ]);
 
-        Goal::query()->create([
-            'tenant_id' => $tenant->id,
-            'name' => 'Home Down Payment',
-            'target_amount' => 50000,
-            'current_amount' => 8500,
-            'target_date' => Carbon::now()->addYears(2),
-            'color' => '#10b981',
-            'created_by' => $owner?->id,
-        ]);
+            $runningTotal = 0;
+            foreach ($data['contributions'] as $index => $amount) {
+                GoalContribution::query()->create([
+                    'goal_id' => $goal->id,
+                    'amount' => $amount,
+                    'notes' => $index === 0 ? 'Initial deposit' : null,
+                    'contributed_at' => Carbon::now()->subMonths(count($data['contributions']) - $index - 1)->day(15),
+                    'created_by' => $owner?->id,
+                ]);
+                $runningTotal += $amount;
+            }
+
+            $goal->update(['current_amount' => $runningTotal]);
+        }
     }
 }

@@ -11,6 +11,7 @@ Enterprise architecture for a **multi-tenant SaaS personal finance platform**.
 | [STEP-06-CATEGORIES-MODULE.md](./STEP-06-CATEGORIES-MODULE.md) | Step 6: Category management, system/custom categories, CRUD |
 | [STEP-07-TRANSACTIONS-MODULE.md](./STEP-07-TRANSACTIONS-MODULE.md) | Step 7: Transactions, transfers, tags, attachments, export |
 | [STEP-08-BUDGET-MANAGEMENT.md](./STEP-08-BUDGET-MANAGEMENT.md) | Step 8: Monthly/weekly/category budgets, utilization, alerts, reports |
+| [STEP-09-SAVINGS-GOALS.md](./STEP-09-SAVINGS-GOALS.md) | Step 9: Savings goals, contributions, progress, forecast, reports |
 
 ## Technology Stack (Target)
 

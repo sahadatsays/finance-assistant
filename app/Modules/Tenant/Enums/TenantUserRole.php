@@ -31,4 +31,9 @@ enum TenantUserRole: string
     {
         return $this === self::Owner;
     }
+
+    public function canManageGoals(): bool
+    {
+        return $this === self::Owner;
+    }
 }
