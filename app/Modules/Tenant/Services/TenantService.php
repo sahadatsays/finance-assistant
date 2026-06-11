@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Modules\Tenant\Enums\TenantStatus;
 use App\Modules\Tenant\Enums\TenantUserRole;
 use App\Modules\Tenant\Repositories\Contracts\TenantRepositoryInterface;
+use App\Services\Platform\ActivityLogService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,7 @@ class TenantService
         private TenantRepositoryInterface $tenants,
         private SubscriptionService $subscriptions,
         private TenantUserService $tenantUsers,
+        private ActivityLogService $activityLog,
     ) {}
 
     /**
@@ -67,32 +69,59 @@ class TenantService
                 $this->tenantUsers->attach($tenant, $owner, TenantUserRole::Owner);
             }
 
-            return $tenant->load(['subscription.plan', 'tenantUsers.user']);
+            $tenant = $tenant->load(['subscription.plan', 'tenantUsers.user']);
+
+            $this->activityLog->log(
+                "Tenant \"{$tenant->name}\" was created.",
+                subject: $tenant,
+                causer: $createdBy,
+                tenant: $tenant,
+            );
+
+            return $tenant;
         });
     }
 
-    public function suspend(Tenant $tenant): Tenant
+    public function suspend(Tenant $tenant, ?User $causer = null): Tenant
     {
         if ($tenant->status === TenantStatus::Suspended) {
             return $tenant;
         }
 
-        return $this->tenants->update($tenant, [
+        $tenant = $this->tenants->update($tenant, [
             'status' => TenantStatus::Suspended,
             'suspended_at' => now(),
         ]);
+
+        $this->activityLog->log(
+            "Tenant \"{$tenant->name}\" was suspended.",
+            subject: $tenant,
+            causer: $causer,
+            tenant: $tenant,
+        );
+
+        return $tenant;
     }
 
-    public function activate(Tenant $tenant): Tenant
+    public function activate(Tenant $tenant, ?User $causer = null): Tenant
     {
         if ($tenant->status === TenantStatus::Cancelled) {
             throw new InvalidArgumentException('Cancelled tenants cannot be reactivated without manual intervention.');
         }
 
-        return $this->tenants->update($tenant, [
+        $tenant = $this->tenants->update($tenant, [
             'status' => TenantStatus::Active,
             'suspended_at' => null,
         ]);
+
+        $this->activityLog->log(
+            "Tenant \"{$tenant->name}\" was activated.",
+            subject: $tenant,
+            causer: $causer,
+            tenant: $tenant,
+        );
+
+        return $tenant;
     }
 
     /**

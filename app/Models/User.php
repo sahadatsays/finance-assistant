@@ -94,7 +94,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 
     public function isPlatformAdmin(): bool
     {
-        return $this->is_platform_admin;
+        return (bool) $this->is_platform_admin;
     }
 
     public function belongsToTenant(Tenant $tenant): bool

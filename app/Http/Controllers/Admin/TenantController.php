@@ -65,11 +65,11 @@ class TenantController extends Controller
         ]);
     }
 
-    public function suspend(Tenant $tenant): JsonResponse
+    public function suspend(Request $request, Tenant $tenant): JsonResponse
     {
         $this->authorize('suspend', $tenant);
 
-        $tenant = $this->tenants->suspend($tenant);
+        $tenant = $this->tenants->suspend($tenant, $request->user());
 
         return response()->json([
             'message' => 'Tenant suspended successfully.',
@@ -77,11 +77,11 @@ class TenantController extends Controller
         ]);
     }
 
-    public function activate(Tenant $tenant): JsonResponse
+    public function activate(Request $request, Tenant $tenant): JsonResponse
     {
         $this->authorize('activate', $tenant);
 
-        $tenant = $this->tenants->activate($tenant);
+        $tenant = $this->tenants->activate($tenant, $request->user());
 
         if ($tenant->subscription !== null) {
             $this->subscriptions->activate($tenant->subscription);
