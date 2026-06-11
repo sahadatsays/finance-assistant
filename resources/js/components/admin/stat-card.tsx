@@ -6,6 +6,8 @@ type Props = {
     title: string;
     value: string | number;
     subtitle?: string;
+    badge?: string;
+    badgeClassName?: string;
     icon: LucideIcon;
     color?: 'violet' | 'green' | 'orange' | 'blue' | 'red' | 'cyan';
 };
@@ -23,19 +25,31 @@ export default function StatCard({
     title,
     value,
     subtitle,
+    badge,
+    badgeClassName,
     icon: Icon,
     color = 'violet',
 }: Props) {
     return (
         <Card className="border-0 shadow-sm">
-            <CardContent className="flex items-center justify-between p-6">
-                <div>
+            <CardContent className="flex items-center justify-between gap-4 p-5">
+                <div className="min-w-0 flex-1">
                     <p className="text-sm text-muted-foreground">{title}</p>
                     <p className="mt-1 text-2xl font-semibold">{value}</p>
                     {subtitle && (
                         <p className="mt-1 text-xs text-muted-foreground">
                             {subtitle}
                         </p>
+                    )}
+                    {badge && (
+                        <span
+                            className={cn(
+                                'mt-2 inline-flex rounded-md px-2 py-0.5 text-xs font-medium',
+                                badgeClassName,
+                            )}
+                        >
+                            {badge}
+                        </span>
                     )}
                 </div>
                 <div

@@ -1,6 +1,5 @@
 import { Head } from '@inertiajs/react';
 import {
-    CircleDollarSign,
     Landmark,
     PiggyBank,
     Target,
@@ -16,9 +15,7 @@ import TenantSwitcher from '@/components/dashboard/tenant-switcher';
 import BudgetAlerts from '@/components/dashboard/widgets/budget-alerts';
 import RecentTransactions from '@/components/dashboard/widgets/recent-transactions';
 import SavingsGoals from '@/components/dashboard/widgets/savings-goals';
-import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/currency';
-import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
 
 type TenantOption = { id: number; name: string; slug: string };
@@ -117,18 +114,18 @@ export default function Dashboard({
         <>
             <Head title="Dashboard" />
 
-            <div className="space-y-6">
+            <div className="space-y-8">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold">Dashboard</h1>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="mt-1 text-sm text-muted-foreground">
                             Your financial overview
                         </p>
                     </div>
                     <TenantSwitcher tenant={tenant} tenants={tenants} />
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                     <StatCard
                         title="Total Income"
                         value={formatCurrency(metrics.total_income)}
@@ -154,6 +151,12 @@ export default function Dashboard({
                         title="Budget Status"
                         value={`${metrics.budget_status.percentage}%`}
                         subtitle={`${formatCurrency(metrics.budget_status.spent)} of ${formatCurrency(metrics.budget_status.budgeted)}`}
+                        badge={
+                            budgetStatusLabel[metrics.budget_status.status]
+                        }
+                        badgeClassName={
+                            budgetStatusColor[metrics.budget_status.status]
+                        }
                         icon={Target}
                         color="orange"
                     />
@@ -166,35 +169,27 @@ export default function Dashboard({
                     />
                 </div>
 
-                <div className="flex items-center gap-2">
-                    <CircleDollarSign className="size-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                        Budget:
-                    </span>
-                    <Badge
-                        className={cn(
-                            budgetStatusColor[metrics.budget_status.status],
-                        )}
-                    >
-                        {budgetStatusLabel[metrics.budget_status.status]}
-                    </Badge>
-                </div>
+                <section className="space-y-4">
+                    <h2 className="text-lg font-semibold">Analytics</h2>
+                    <div className="grid gap-4 lg:grid-cols-2">
+                        <IncomeExpenseChart data={charts.income_vs_expense} />
+                        <CategoryBreakdownChart
+                            data={charts.category_breakdown}
+                        />
+                        <MonthlyTrendChart data={charts.monthly_trend} />
+                        <SavingsGoals goals={widgets.savings_goals} />
+                    </div>
+                </section>
 
-                <div className="grid gap-6 lg:grid-cols-2">
-                    <IncomeExpenseChart data={charts.income_vs_expense} />
-                    <CategoryBreakdownChart
-                        data={charts.category_breakdown}
-                    />
-                    <MonthlyTrendChart data={charts.monthly_trend} />
-                    <SavingsGoals goals={widgets.savings_goals} />
-                </div>
-
-                <div className="grid gap-6 lg:grid-cols-2">
-                    <RecentTransactions
-                        transactions={widgets.recent_transactions}
-                    />
-                    <BudgetAlerts alerts={widgets.budget_alerts} />
-                </div>
+                <section className="space-y-4">
+                    <h2 className="text-lg font-semibold">Activity</h2>
+                    <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+                        <RecentTransactions
+                            transactions={widgets.recent_transactions}
+                        />
+                        <BudgetAlerts alerts={widgets.budget_alerts} />
+                    </div>
+                </section>
             </div>
         </>
     );

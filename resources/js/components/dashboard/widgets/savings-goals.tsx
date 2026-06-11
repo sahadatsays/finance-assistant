@@ -19,19 +19,22 @@ type SavingsGoal = {
 
 export default function SavingsGoals({ goals }: { goals: SavingsGoal[] }) {
     return (
-        <Card className="border-0 shadow-sm">
-            <CardHeader>
+        <Card className="gap-4 border-0 py-4 shadow-sm">
+            <CardHeader className="pb-0">
                 <CardTitle>Savings Goals</CardTitle>
                 <CardDescription>Track your progress</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="max-h-80 space-y-4 overflow-y-auto pt-0">
                 {goals.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
                         No savings goals yet
                     </p>
                 ) : (
                     goals.map((goal) => (
-                        <div key={goal.id} className="space-y-2">
+                        <div
+                            key={goal.id}
+                            className="space-y-2 border-b border-border/50 pb-4 last:border-0 last:pb-0"
+                        >
                             <div className="flex items-center justify-between">
                                 <p className="text-sm font-medium">
                                     {goal.name}

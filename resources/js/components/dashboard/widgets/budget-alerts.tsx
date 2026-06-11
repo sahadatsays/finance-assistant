@@ -21,12 +21,12 @@ type BudgetAlert = {
 
 export default function BudgetAlerts({ alerts }: { alerts: BudgetAlert[] }) {
     return (
-        <Card className="border-0 shadow-sm">
-            <CardHeader>
+        <Card className="gap-4 border-0 py-4 shadow-sm">
+            <CardHeader className="pb-0">
                 <CardTitle>Budget Alerts</CardTitle>
                 <CardDescription>Categories needing attention</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="max-h-96 space-y-3 overflow-y-auto pt-0">
                 {alerts.length === 0 ? (
                     <div className="flex items-center gap-2 rounded-lg bg-emerald-500/10 p-3 text-sm text-emerald-700 dark:text-emerald-400">
                         All budgets on track
@@ -35,7 +35,7 @@ export default function BudgetAlerts({ alerts }: { alerts: BudgetAlert[] }) {
                     alerts.map((alert) => (
                         <div
                             key={alert.id}
-                            className="flex items-start justify-between gap-3 rounded-lg border p-3"
+                            className="flex items-start justify-between gap-3 rounded-lg border p-4"
                         >
                             <div className="flex items-start gap-3">
                                 <div

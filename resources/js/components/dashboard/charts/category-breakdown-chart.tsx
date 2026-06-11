@@ -16,12 +16,12 @@ export default function CategoryBreakdownChart({
     data: DataPoint[];
 }) {
     return (
-        <Card className="border-0 shadow-sm">
-            <CardHeader>
+        <Card className="gap-4 border-0 py-4 shadow-sm">
+            <CardHeader className="pb-0">
                 <CardTitle>Category Breakdown</CardTitle>
                 <CardDescription>Expenses by category this month</CardDescription>
             </CardHeader>
-            <CardContent className="h-72">
+            <CardContent className="h-72 pt-0">
                 {data.length === 0 ? (
                     <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                         No expense data this month

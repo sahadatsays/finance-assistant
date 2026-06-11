@@ -24,12 +24,12 @@ export default function RecentTransactions({
     transactions: Transaction[];
 }) {
     return (
-        <Card className="border-0 shadow-sm">
-            <CardHeader>
+        <Card className="gap-4 border-0 py-4 shadow-sm">
+            <CardHeader className="pb-0">
                 <CardTitle>Recent Transactions</CardTitle>
                 <CardDescription>Latest activity</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="max-h-96 space-y-3 overflow-y-auto pt-0">
                 {transactions.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
                         No transactions yet
@@ -38,7 +38,7 @@ export default function RecentTransactions({
                     transactions.map((tx) => (
                         <div
                             key={tx.id}
-                            className="flex items-center justify-between gap-3 rounded-lg border p-3"
+                            className="flex items-center justify-between gap-3 rounded-lg border p-4"
                         >
                             <div className="flex items-center gap-3">
                                 <div
