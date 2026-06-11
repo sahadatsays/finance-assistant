@@ -36,6 +36,7 @@ class TenantService
             }
 
             $tenant = $this->tenants->create([
+                'uuid' => (string) Str::uuid(),
                 'name' => $data['name'],
                 'slug' => $slug,
                 'status' => TenantStatus::Trial,

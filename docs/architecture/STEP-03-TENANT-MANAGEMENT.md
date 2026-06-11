@@ -170,13 +170,23 @@ app/Policies/Platform/   TenantPolicy
 
 ```bash
 php artisan db:seed --class=PlanSeeder
-php artisan db:seed --class=PlatformSeeder
+php artisan db:seed --class=RoleAndPermissionUserSeeder
 ```
 
 | Seeder | Creates |
 |--------|---------|
 | PlanSeeder | free, pro, business plans |
-| PlatformSeeder | admin@financeassistant.com (Super Admin) |
+| RoleAndPermissionUserSeeder | All role accounts (password: `password`) |
+
+| Email | Role | Tenant |
+|-------|------|--------|
+| admin@financeassistant.com | Super Admin | — |
+| owner@acme.com | Tenant Owner | Acme Corporation (active) |
+| member@acme.com | Tenant User | Acme Corporation |
+| owner@startup.com | Tenant Owner | Startup Inc (trial) |
+| member@startup.com | Tenant User | Startup Inc |
+| owner@suspended.com | Tenant Owner | Suspended LLC (suspended) |
+| guest@example.com | Guest (no tenant) | — |
 
 ---
 

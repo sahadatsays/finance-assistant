@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class PlatformSeeder extends Seeder
@@ -12,14 +11,6 @@ class PlatformSeeder extends Seeder
      */
     public function run(): void
     {
-        User::query()->updateOrCreate(
-            ['email' => 'admin@financeassistant.com'],
-            [
-                'name' => 'Super Admin',
-                'password' => 'password',
-                'is_platform_admin' => true,
-                'email_verified_at' => now(),
-            ],
-        );
+        $this->call(RoleAndPermissionUserSeeder::class);
     }
 }

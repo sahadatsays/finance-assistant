@@ -8,6 +8,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import OneClickLogin, {
+    type OneClickAccount,
+} from '@/components/auth/one-click-login';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
@@ -15,9 +18,17 @@ import { request } from '@/routes/password';
 type Props = {
     status?: string;
     canResetPassword: boolean;
+    oneClickLogin?: {
+        enabled: boolean;
+        accounts: OneClickAccount[];
+    };
 };
 
-export default function Login({ status, canResetPassword }: Props) {
+export default function Login({
+    status,
+    canResetPassword,
+    oneClickLogin,
+}: Props) {
     return (
         <>
             <Head title="Log in" />
@@ -101,6 +112,10 @@ export default function Login({ status, canResetPassword }: Props) {
                     </>
                 )}
             </Form>
+
+            {oneClickLogin?.enabled && oneClickLogin.accounts.length > 0 && (
+                <OneClickLogin accounts={oneClickLogin.accounts} />
+            )}
 
             {status && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">
