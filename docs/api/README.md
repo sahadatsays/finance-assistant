@@ -63,4 +63,16 @@ See [dashboard.md](./v1/dashboard.md).
 
 See [categories.md](./v1/categories.md).
 
+## Transactions
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/transactions` | Bearer + verified | List transactions (filter, sort, paginate) |
+| GET | `/api/v1/transactions/{id}` | Bearer + verified | Show transaction |
+| POST | `/api/v1/transactions` | Bearer + verified | Create transaction |
+| PUT | `/api/v1/transactions/{id}` | Bearer + verified | Update transaction |
+| DELETE | `/api/v1/transactions/{id}` | Bearer + verified | Delete transaction |
+
+See [transactions.md](./v1/transactions.md).
+
 Additional finance feature endpoints will be documented here as they are exposed.

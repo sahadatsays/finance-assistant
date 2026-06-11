@@ -42,6 +42,7 @@ class TransactionResource extends JsonResource
             'attachments' => $this->whenLoaded('attachments', fn () => $this->attachments->map(fn ($file) => [
                 'id' => $file->id,
                 'original_name' => $file->original_name,
+                'mime_type' => $file->mime_type,
                 'size' => $file->size,
             ])),
         ];

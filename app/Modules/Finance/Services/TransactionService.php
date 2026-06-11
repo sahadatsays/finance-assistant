@@ -33,7 +33,11 @@ class TransactionService
      *     account_id?: int,
      *     tag_id?: int,
      *     date_from?: string,
-     *     date_to?: string
+     *     date_to?: string,
+     *     amount_min?: float|string,
+     *     amount_max?: float|string,
+     *     sort?: string,
+     *     direction?: string
      * }  $filters
      * @return LengthAwarePaginator<int, Transaction>
      */
@@ -41,9 +45,7 @@ class TransactionService
     {
         $query = Transaction::query()
             ->with(['category', 'account', 'transferAccount', 'tags', 'attachments'])
-            ->where('tenant_id', $tenant->id)
-            ->orderByDesc('occurred_at')
-            ->orderByDesc('id');
+            ->where('tenant_id', $tenant->id);
 
         if (! empty($filters['search'])) {
             $search = '%'.$filters['search'].'%';
@@ -82,7 +84,37 @@ class TransactionService
             $query->whereDate('occurred_at', '<=', $filters['date_to']);
         }
 
+        if (isset($filters['amount_min']) && $filters['amount_min'] !== '') {
+            $query->where('amount', '>=', $filters['amount_min']);
+        }
+
+        if (isset($filters['amount_max']) && $filters['amount_max'] !== '') {
+            $query->where('amount', '<=', $filters['amount_max']);
+        }
+
+        $allowedSorts = ['occurred_at', 'amount', 'created_at', 'type'];
+        $sort = in_array($filters['sort'] ?? '', $allowedSorts, true)
+            ? $filters['sort']
+            : 'occurred_at';
+        $direction = in_array(strtolower($filters['direction'] ?? ''), ['asc', 'desc'], true)
+            ? strtolower($filters['direction'])
+            : 'desc';
+
+        $query->orderBy($sort, $direction);
+
+        if ($sort !== 'id') {
+            $query->orderByDesc('id');
+        }
+
         return $query->paginate($perPage)->withQueryString();
+    }
+
+    public function findForTenant(Tenant $tenant, int $transactionId): ?Transaction
+    {
+        return Transaction::query()
+            ->with(['category', 'account', 'transferAccount', 'tags', 'attachments'])
+            ->where('tenant_id', $tenant->id)
+            ->find($transactionId);
     }
 
     /**
