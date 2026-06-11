@@ -20,10 +20,20 @@ class PlanController extends Controller
 
     public function index(): Response
     {
-        $plans = Plan::query()->orderBy('price_monthly')->get();
+        $plans = Plan::query()->orderBy('sort_order')->orderBy('price_monthly')->get();
 
         return Inertia::render('admin/plans/index', [
             'plans' => PlanResource::collection($plans)->resolve(),
+        ]);
+    }
+
+    public function websiteIndex(): Response
+    {
+        $plans = Plan::query()->orderBy('sort_order')->orderBy('price_monthly')->get();
+
+        return Inertia::render('admin/website/plans/index', [
+            'plans' => PlanResource::collection($plans)->resolve(),
+            'featureLabels' => config('marketing.feature_labels', []),
         ]);
     }
 
@@ -37,7 +47,12 @@ class PlanController extends Controller
             'max_users' => ['required', 'integer', 'min:1'],
             'features' => ['nullable', 'array'],
             'is_active' => ['boolean'],
+            'sort_order' => ['integer', 'min:0'],
         ]);
+
+        if (! isset($validated['sort_order'])) {
+            $validated['sort_order'] = (int) Plan::query()->max('sort_order') + 1;
+        }
 
         $plan = Plan::query()->create($validated);
 
@@ -62,6 +77,7 @@ class PlanController extends Controller
             'max_users' => ['sometimes', 'required', 'integer', 'min:1'],
             'features' => ['nullable', 'array'],
             'is_active' => ['boolean'],
+            'sort_order' => ['integer', 'min:0'],
         ]);
 
         $plan->update($validated);
@@ -75,5 +91,23 @@ class PlanController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Plan updated.')]);
 
         return to_route('admin.plans.index');
+    }
+
+    public function reorder(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'plans' => ['required', 'array'],
+            'plans.*.id' => ['required', 'integer', 'exists:plans,id'],
+            'plans.*.sort_order' => ['required', 'integer', 'min:0'],
+        ]);
+
+        foreach ($validated['plans'] as $item) {
+            Plan::query()->whereKey($item['id'])->update(['sort_order' => $item['sort_order']]);
+        }
+
+        $this->activityLog->log('Subscription plans were reordered.', causer: $request->user());
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Plan order updated.')]);
+
+        return to_route('admin.website.plans.index');
     }
 }

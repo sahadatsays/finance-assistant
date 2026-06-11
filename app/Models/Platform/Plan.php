@@ -18,10 +18,11 @@ use Illuminate\Support\Carbon;
  * @property int $max_users
  * @property array<string, mixed>|null $features
  * @property bool $is_active
+ * @property int $sort_order
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'slug', 'description', 'price_monthly', 'max_users', 'features', 'is_active'])]
+#[Fillable(['name', 'slug', 'description', 'price_monthly', 'max_users', 'features', 'is_active', 'sort_order'])]
 class Plan extends Model
 {
     /** @use HasFactory<PlanFactory> */
@@ -37,6 +38,7 @@ class Plan extends Model
             'max_users' => 'integer',
             'features' => 'array',
             'is_active' => 'boolean',
+            'sort_order' => 'integer',
         ];
     }
 

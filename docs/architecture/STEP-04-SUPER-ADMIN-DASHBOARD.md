@@ -49,6 +49,7 @@
 | Subscription Plans | `/admin/plans` | View tiers, create plans |
 | System Settings | `/admin/settings` | App name, support email, trial days, flags |
 | Activity Logs | `/admin/activity-logs` | Platform audit trail |
+| Website Management | `/admin/website` | CMS: homepage, pages, nav, footer, testimonials, FAQs, plans, blog, SEO, media |
 
 ---
 

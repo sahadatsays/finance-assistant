@@ -3,6 +3,7 @@ import {
     Activity,
     Building2,
     CreditCard,
+    Globe,
     LayoutDashboard,
     Settings,
 } from 'lucide-react';
@@ -13,6 +14,7 @@ const navItems = [
     { title: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { title: 'Tenants', href: '/admin/tenants', icon: Building2 },
     { title: 'Plans', href: '/admin/plans', icon: CreditCard },
+    { title: 'Website', href: '/admin/website', icon: Globe },
     { title: 'Settings', href: '/admin/settings', icon: Settings },
     { title: 'Activity Logs', href: '/admin/activity-logs', icon: Activity },
 ];

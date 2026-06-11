@@ -3,18 +3,23 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Platform\Plan;
+use App\Models\Platform\BlogPost;
+use App\Services\Platform\Website\WebsiteContentService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Collection;
 
 class MarketingController extends Controller
 {
+    public function __construct(private WebsiteContentService $content) {}
+
     public function home(): View
     {
+        $homepage = $this->content->homepage()->load('heroImage');
+
         return $this->view('marketing.home', [
-            'plans' => $this->activePlans(),
-            'testimonials' => config('marketing.testimonials'),
+            'homepage' => $homepage,
+            'plans' => $this->content->activePlans(),
+            'testimonials' => $this->content->activeTestimonials(),
         ]);
     }
 
@@ -32,25 +37,47 @@ class MarketingController extends Controller
 
     public function blog(): View
     {
-        return $this->view('marketing.blog', [
-            'posts' => config('marketing.blog_posts'),
-        ]);
+        $posts = $this->content->publishedBlogPosts()->map(function (mixed $post): array {
+            if ($post instanceof BlogPost) {
+                return [
+                    'slug' => $post->slug,
+                    'title' => $post->title,
+                    'excerpt' => $post->excerpt,
+                    'category' => $post->category,
+                    'date' => $post->published_at?->toDateString() ?? $post->created_at?->toDateString(),
+                    'read_time' => "{$post->read_time_minutes} min",
+                ];
+            }
+
+            return (array) $post;
+        });
+
+        return $this->view('marketing.blog', ['posts' => $posts]);
     }
 
     public function blogShow(string $slug): View|RedirectResponse
     {
-        $post = collect(config('marketing.blog_posts'))
-            ->firstWhere('slug', $slug);
+        $post = $this->content->publishedBlogPost($slug);
 
         if ($post === null) {
             abort(404);
         }
 
+        $isModel = $post instanceof BlogPost;
+
         return $this->view('marketing.blog-show', [
-            'post' => $post,
+            'post' => $isModel ? [
+                'slug' => $post->slug,
+                'title' => $post->title,
+                'excerpt' => $post->excerpt,
+                'category' => $post->category,
+                'date' => $post->published_at?->toDateString() ?? $post->created_at?->toDateString(),
+                'read_time' => "{$post->read_time_minutes} min",
+                'body' => $post->body,
+            ] : (array) $post,
             'seo' => [
-                'title' => $post['title'],
-                'description' => $post['excerpt'],
+                'title' => $isModel ? $post->title : $post->title,
+                'description' => $isModel ? ($post->excerpt ?? '') : $post->excerpt,
             ],
         ]);
     }
@@ -111,20 +138,13 @@ class MarketingController extends Controller
     private function view(string $template, array $data = []): View
     {
         $page = str_replace(['marketing.', '-'], ['', '_'], basename($template, '.blade.php'));
+        $seo = $this->content->seo($page);
 
         return view($template, array_merge([
-            'seo' => config("marketing.seo.{$page}", config('marketing.seo.home')),
+            'seo' => [
+                'title' => $seo['title'],
+                'description' => $seo['description'],
+            ],
         ], $data));
-    }
-
-    /**
-     * @return Collection<int, Plan>
-     */
-    private function activePlans()
-    {
-        return Plan::query()
-            ->where('is_active', true)
-            ->orderBy('price_monthly')
-            ->get();
     }
 }

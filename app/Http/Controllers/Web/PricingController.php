@@ -3,21 +3,25 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Platform\Plan;
+use App\Services\Platform\Website\WebsiteContentService;
 use Illuminate\Contracts\View\View;
 
 class PricingController extends Controller
 {
+    public function __construct(private WebsiteContentService $content) {}
+
     public function __invoke(): View
     {
+        $seo = $this->content->seo('pricing');
+
         return view('marketing.pricing', [
-            'seo' => config('marketing.seo.pricing'),
-            'plans' => Plan::query()
-                ->where('is_active', true)
-                ->orderBy('price_monthly')
-                ->get(),
+            'seo' => [
+                'title' => $seo['title'],
+                'description' => $seo['description'],
+            ],
+            'plans' => $this->content->activePlans(),
             'featureLabels' => config('marketing.feature_labels'),
-            'faq' => config('marketing.pricing_faq'),
+            'faq' => $this->content->activeFaqs('pricing'),
         ]);
     }
 }

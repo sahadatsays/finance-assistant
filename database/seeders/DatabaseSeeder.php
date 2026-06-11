@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             RoleAndPermissionUserSeeder::class,
             FinanceDemoSeeder::class,
             PlatformSettingSeeder::class,
+            WebsiteContentSeeder::class,
         ]);
     }
 }

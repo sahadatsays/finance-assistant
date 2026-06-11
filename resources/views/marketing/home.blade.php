@@ -4,12 +4,12 @@
     <section class="relative overflow-hidden bg-gradient-to-b from-white to-surface py-16 sm:py-24">
         <div class="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
             <div>
-                <p class="text-sm font-semibold uppercase tracking-wide text-brand">Multi-tenant personal finance platform</p>
-                <h1 class="mt-4 text-4xl font-bold tracking-tight text-heading sm:text-5xl">Take control of your money — without the spreadsheet chaos</h1>
-                <p class="mt-6 text-lg text-gray-600">Track transactions, master budgets, reach savings goals, and understand your net worth. Free for individuals. Built for households and teams.</p>
+                <p class="text-sm font-semibold uppercase tracking-wide text-brand">{{ $homepage->hero_eyebrow ?? 'Multi-tenant personal finance platform' }}</p>
+                <h1 class="mt-4 text-4xl font-bold tracking-tight text-heading sm:text-5xl">{{ $homepage->hero_title ?? 'Take control of your money — without the spreadsheet chaos' }}</h1>
+                <p class="mt-6 text-lg text-gray-600">{{ $homepage->hero_subtitle ?? 'Track transactions, master budgets, reach savings goals, and understand your net worth.' }}</p>
                 <div class="mt-8 flex flex-col gap-4 sm:flex-row">
-                    <a href="{{ route('register') }}" class="inline-flex items-center justify-center rounded-lg bg-brand px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-dark">Start Free</a>
-                    <a href="{{ route('marketing.pricing') }}" class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-heading transition hover:border-brand hover:text-brand">View Pricing</a>
+                    <a href="{{ $homepage->hero_primary_url ?? route('register') }}" class="inline-flex items-center justify-center rounded-lg bg-brand px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-dark">{{ $homepage->hero_primary_label ?? 'Start Free' }}</a>
+                    <a href="{{ $homepage->hero_secondary_url ?? route('marketing.pricing') }}" class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-heading transition hover:border-brand hover:text-brand">{{ $homepage->hero_secondary_label ?? 'View Pricing' }}</a>
                 </div>
                 <p class="mt-4 text-sm text-gray-500">Free forever plan &middot; No credit card &middot; Setup in 2 minutes</p>
             </div>
@@ -92,10 +92,10 @@
             <div class="mt-12 grid gap-8 sm:grid-cols-3">
                 @foreach ($testimonials as $testimonial)
                     <blockquote class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                        <p class="text-gray-600">&ldquo;{{ $testimonial['quote'] }}&rdquo;</p>
+                        <p class="text-gray-600">&ldquo;{{ $testimonial->quote }}&rdquo;</p>
                         <footer class="mt-4">
-                            <p class="text-sm font-semibold text-heading">{{ $testimonial['name'] }}</p>
-                            <p class="text-xs text-gray-500">{{ $testimonial['role'] }}</p>
+                            <p class="text-sm font-semibold text-heading">{{ $testimonial->author_name }}</p>
+                            <p class="text-xs text-gray-500">{{ $testimonial->author_role }}</p>
                         </footer>
                     </blockquote>
                 @endforeach
