@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Modules\Finance\Enums\BudgetPeriodType;
 use App\Modules\Finance\Enums\CategoryType;
 use App\Services\Platform\ActivityLogService;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -33,6 +34,43 @@ class BudgetService
             ->where('is_active', true)
             ->orderByDesc('period_start')
             ->get();
+    }
+
+    /**
+     * @param  array{period_type?: string, sort?: string, direction?: string}  $filters
+     * @return LengthAwarePaginator<int, Budget>
+     */
+    public function paginateForTenant(Tenant $tenant, array $filters = [], int $perPage = 15): LengthAwarePaginator
+    {
+        $query = Budget::query()
+            ->with('lines.category')
+            ->where('tenant_id', $tenant->id)
+            ->where('is_active', true);
+
+        if (! empty($filters['period_type'])) {
+            $query->where('period_type', $filters['period_type']);
+        }
+
+        $allowedSorts = ['period_start', 'period_end', 'amount', 'name', 'created_at'];
+        $sort = in_array($filters['sort'] ?? '', $allowedSorts, true)
+            ? $filters['sort']
+            : 'period_start';
+        $direction = in_array(strtolower($filters['direction'] ?? ''), ['asc', 'desc'], true)
+            ? strtolower($filters['direction'])
+            : 'desc';
+
+        return $query
+            ->orderBy($sort, $direction)
+            ->orderByDesc('id')
+            ->paginate($perPage);
+    }
+
+    public function findForTenant(Tenant $tenant, int $budgetId): ?Budget
+    {
+        return Budget::query()
+            ->with('lines.category')
+            ->where('tenant_id', $tenant->id)
+            ->find($budgetId);
     }
 
     /**

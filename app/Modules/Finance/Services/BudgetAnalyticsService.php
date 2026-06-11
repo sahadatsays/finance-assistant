@@ -37,6 +37,60 @@ class BudgetAnalyticsService
     }
 
     /**
+     * @return array{
+     *     budget: array{id: int, name: string, period_type: string, period_start: string, period_end: string},
+     *     allocated: float,
+     *     spent: float,
+     *     remaining: float,
+     *     percentage: float,
+     *     status: string,
+     *     categories: list<array{
+     *         category_id: int,
+     *         category: string,
+     *         color: string,
+     *         allocated: float,
+     *         spent: float,
+     *         remaining: float,
+     *         percentage: float,
+     *         status: string
+     *     }>
+     * }
+     */
+    public function analysis(Budget $budget): array
+    {
+        $utilization = $this->utilization($budget);
+
+        $categories = collect($this->categoryProgress($budget))
+            ->map(fn (array $category): array => [
+                'category_id' => $category['category_id'],
+                'category' => $category['category'],
+                'color' => $category['color'],
+                'allocated' => $category['budgeted'],
+                'spent' => $category['spent'],
+                'remaining' => round(max($category['budgeted'] - $category['spent'], 0), 2),
+                'percentage' => $category['percentage'],
+                'status' => $category['status'],
+            ])
+            ->all();
+
+        return [
+            'budget' => [
+                'id' => $budget->id,
+                'name' => $budget->name,
+                'period_type' => $budget->period_type->value,
+                'period_start' => $budget->period_start->toDateString(),
+                'period_end' => $budget->period_end->toDateString(),
+            ],
+            'allocated' => $utilization['budgeted'],
+            'spent' => $utilization['spent'],
+            'remaining' => $utilization['remaining'],
+            'percentage' => $utilization['percentage'],
+            'status' => $utilization['status'],
+            'categories' => $categories,
+        ];
+    }
+
+    /**
      * @return list<array{
      *     category_id: int,
      *     category: string,

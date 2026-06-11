@@ -75,4 +75,17 @@ See [categories.md](./v1/categories.md).
 
 See [transactions.md](./v1/transactions.md).
 
+## Budgets
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/budgets` | Bearer + verified | List budgets (filter, paginate) |
+| GET | `/api/v1/budgets/{id}` | Bearer + verified | Show budget |
+| GET | `/api/v1/budgets/{id}/analysis` | Bearer + verified | Allocated, spent, remaining, percentage |
+| POST | `/api/v1/budgets` | Bearer + verified (owner) | Create budget |
+| PUT | `/api/v1/budgets/{id}` | Bearer + verified (owner) | Update budget |
+| DELETE | `/api/v1/budgets/{id}` | Bearer + verified (owner) | Delete budget |
+
+See [budgets.md](./v1/budgets.md).
+
 Additional finance feature endpoints will be documented here as they are exposed.
