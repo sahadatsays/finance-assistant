@@ -101,4 +101,16 @@ See [budgets.md](./v1/budgets.md).
 
 See [goals.md](./v1/goals.md).
 
+## Attachments
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/v1/uploads` | Bearer + verified | Upload file (pending) |
+| POST | `/api/v1/transactions/{id}/attachments` | Bearer + verified | Attach file or pending upload |
+| GET | `/api/v1/attachments/{id}` | Bearer + verified | Show attachment with secure URL |
+| GET | `/api/v1/attachments/{id}/file` | Signed URL | Download file |
+| DELETE | `/api/v1/attachments/{id}` | Bearer + verified | Delete attachment |
+
+See [attachments.md](./v1/attachments.md).
+
 Additional finance feature endpoints will be documented here as they are exposed.

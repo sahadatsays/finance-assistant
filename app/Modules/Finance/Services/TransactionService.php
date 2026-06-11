@@ -3,7 +3,6 @@
 namespace App\Modules\Finance\Services;
 
 use App\Models\Finance\Account;
-use App\Models\Finance\Attachment;
 use App\Models\Finance\Category;
 use App\Models\Finance\Transaction;
 use App\Models\Platform\Tenant;
@@ -15,13 +14,13 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 
 class TransactionService
 {
     public function __construct(
         private ActivityLogService $activityLog,
+        private AttachmentService $attachments,
         private TagService $tags,
     ) {}
 
@@ -151,7 +150,7 @@ class TransactionService
             $this->tags->syncForTransaction($tenant, $transaction, $data['tags'] ?? []);
 
             if ($attachment !== null) {
-                $this->storeAttachment($tenant, $transaction, $attachment, $user);
+                $this->attachments->storeForTransaction($tenant, $transaction, $user, $attachment);
             }
 
             $this->activityLog->log(
@@ -212,7 +211,7 @@ class TransactionService
             }
 
             if ($attachment !== null) {
-                $this->storeAttachment($transaction->tenant, $transaction, $attachment, $user);
+                $this->attachments->storeForTransaction($transaction->tenant, $transaction, $user, $attachment);
             }
 
             $this->activityLog->log(
@@ -233,8 +232,7 @@ class TransactionService
             $this->reverseBalanceEffect($transaction);
 
             foreach ($transaction->attachments as $file) {
-                Storage::disk('local')->delete($file->path);
-                $file->delete();
+                $this->attachments->delete($file, $user);
             }
 
             $transaction->tags()->detach();
@@ -360,24 +358,5 @@ class TransactionService
     {
         Account::query()->where('id', $transaction->account_id)->increment('balance', $amount);
         Account::query()->where('id', $transaction->transfer_account_id)->decrement('balance', $amount);
-    }
-
-    private function storeAttachment(
-        Tenant $tenant,
-        Transaction $transaction,
-        UploadedFile $file,
-        User $user,
-    ): Attachment {
-        $path = $file->store("attachments/{$tenant->id}/{$transaction->id}", 'local');
-
-        return Attachment::query()->create([
-            'tenant_id' => $tenant->id,
-            'transaction_id' => $transaction->id,
-            'original_name' => $file->getClientOriginalName(),
-            'path' => $path,
-            'mime_type' => $file->getMimeType() ?? 'application/octet-stream',
-            'size' => $file->getSize(),
-            'uploaded_by' => $user->id,
-        ]);
     }
 }

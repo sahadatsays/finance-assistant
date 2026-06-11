@@ -67,4 +67,18 @@ return [
         'cache_ttl' => (int) env('API_DASHBOARD_CACHE_TTL', 300),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Attachment Storage
+    |--------------------------------------------------------------------------
+    */
+
+    'attachments' => [
+        'disk' => env('ATTACHMENT_DISK', 'local'),
+        'max_size_kb' => (int) env('ATTACHMENT_MAX_SIZE_KB', 5120),
+        'allowed_mimes' => ['pdf', 'jpg', 'jpeg', 'png', 'webp'],
+        'signed_url_ttl_minutes' => (int) env('ATTACHMENT_SIGNED_URL_TTL', 30),
+        'pending_ttl_hours' => (int) env('ATTACHMENT_PENDING_TTL_HOURS', 24),
+    ],
+
 ];
