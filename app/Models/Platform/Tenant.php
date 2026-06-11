@@ -2,6 +2,7 @@
 
 namespace App\Models\Platform;
 
+use App\Models\Finance\Account;
 use App\Models\User;
 use App\Modules\Tenant\Enums\TenantStatus;
 use Database\Factories\Platform\TenantFactory;
@@ -62,6 +63,14 @@ class Tenant extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * @return HasMany<Account, $this>
+     */
+    public function accounts(): HasMany
+    {
+        return $this->hasMany(Account::class);
     }
 
     /**

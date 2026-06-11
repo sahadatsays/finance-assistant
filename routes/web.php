@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Tenant\SwitchTenantController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
@@ -9,7 +11,8 @@ if (config('dev.one_click_login')) {
 }
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
+    Route::post('tenant/switch/{tenant}', SwitchTenantController::class)->name('tenant.switch');
 });
 
 require __DIR__.'/settings.php';
