@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\EnsurePlatformAdmin;
+use App\Http\Middleware\EnsureTenantMember;
+use App\Http\Middleware\EnsureTenantOwner;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
@@ -22,6 +25,12 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+        ]);
+
+        $middleware->alias([
+            'platform-admin' => EnsurePlatformAdmin::class,
+            'tenant.member' => EnsureTenantMember::class,
+            'tenant.owner' => EnsureTenantOwner::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

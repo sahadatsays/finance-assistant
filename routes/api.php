@@ -61,3 +61,6 @@ Route::prefix('v1')->group(function (): void {
         Route::get('login-history', [LoginHistoryController::class, 'index'])->name('api.login-history.index');
     });
 });
+
+require __DIR__.'/admin.php';
+require __DIR__.'/tenant.php';
