@@ -2,6 +2,7 @@
 
 namespace App\Modules\Finance;
 
+use App\Models\Finance\Account;
 use App\Models\Finance\Attachment;
 use App\Models\Finance\Bill;
 use App\Models\Finance\Budget;
@@ -11,6 +12,7 @@ use App\Models\Finance\Transaction;
 use App\Modules\Finance\Contracts\AttachmentStorage;
 use App\Modules\Finance\Reports\Report;
 use App\Modules\Finance\Services\AttachmentStorageService;
+use App\Policies\Finance\AccountPolicy;
 use App\Policies\Finance\AttachmentPolicy;
 use App\Policies\Finance\BillPolicy;
 use App\Policies\Finance\BudgetPolicy;
@@ -30,6 +32,7 @@ class FinanceServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Gate::policy(Account::class, AccountPolicy::class);
         Gate::policy(Attachment::class, AttachmentPolicy::class);
         Gate::policy(Bill::class, BillPolicy::class);
         Gate::policy(Report::class, ReportPolicy::class);
