@@ -4,6 +4,7 @@ namespace App\Modules\Tenant\Services;
 
 use App\Models\Platform\Tenant;
 use App\Models\User;
+use App\Modules\Finance\Services\SystemCategoryService;
 use App\Modules\Tenant\Enums\TenantStatus;
 use App\Modules\Tenant\Enums\TenantUserRole;
 use App\Modules\Tenant\Repositories\Contracts\TenantRepositoryInterface;
@@ -21,6 +22,7 @@ class TenantService
         private SubscriptionService $subscriptions,
         private TenantUserService $tenantUsers,
         private ActivityLogService $activityLog,
+        private SystemCategoryService $systemCategories,
     ) {}
 
     /**
@@ -50,6 +52,7 @@ class TenantService
             ]);
 
             $this->subscriptions->createForTenant($tenant, $data['plan_id'] ?? null);
+            $this->systemCategories->seedForTenant($tenant);
 
             if (! empty($data['owner_user_id'])) {
                 $owner = User::query()->findOrFail($data['owner_user_id']);

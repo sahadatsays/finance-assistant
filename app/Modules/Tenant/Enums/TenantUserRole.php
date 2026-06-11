@@ -16,4 +16,9 @@ enum TenantUserRole: string
     {
         return $this === self::Owner;
     }
+
+    public function canManageCategories(): bool
+    {
+        return $this === self::Owner;
+    }
 }

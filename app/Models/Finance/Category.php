@@ -3,6 +3,7 @@
 namespace App\Models\Finance;
 
 use App\Models\Platform\Tenant;
+use App\Models\User;
 use App\Modules\Finance\Enums\CategoryType;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -17,11 +18,14 @@ use Illuminate\Support\Carbon;
  * @property CategoryType $type
  * @property string $color
  * @property string|null $icon
+ * @property bool $is_system
  * @property bool $is_active
+ * @property Carbon|null $archived_at
+ * @property int|null $created_by
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['tenant_id', 'name', 'type', 'color', 'icon', 'is_active'])]
+#[Fillable(['tenant_id', 'name', 'type', 'color', 'icon', 'is_system', 'is_active', 'archived_at', 'created_by'])]
 class Category extends Model
 {
     /**
@@ -31,7 +35,9 @@ class Category extends Model
     {
         return [
             'type' => CategoryType::class,
+            'is_system' => 'boolean',
             'is_active' => 'boolean',
+            'archived_at' => 'datetime',
         ];
     }
 
@@ -41,6 +47,14 @@ class Category extends Model
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**

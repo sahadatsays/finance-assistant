@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Finance\FinanceServiceProvider;
 use App\Modules\Tenant\TenantServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\AuthServiceProvider;
@@ -10,4 +11,5 @@ return [
     AuthServiceProvider::class,
     FortifyServiceProvider::class,
     TenantServiceProvider::class,
+    FinanceServiceProvider::class,
 ];

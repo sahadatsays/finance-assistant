@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Modules\Finance\Enums\AccountType;
 use App\Modules\Finance\Enums\CategoryType;
 use App\Modules\Finance\Enums\TransactionType;
+use App\Modules\Finance\Services\SystemCategoryService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -29,6 +30,8 @@ class FinanceDemoSeeder extends Seeder
 
         $owner = User::query()->where('email', 'owner@acme.com')->first();
 
+        app(SystemCategoryService::class)->seedForTenant($tenant);
+
         if ($tenant->accounts()->exists()) {
             return;
         }
@@ -42,7 +45,7 @@ class FinanceDemoSeeder extends Seeder
             'created_by' => $owner?->id,
         ]);
 
-        $savings = Account::query()->create([
+        Account::query()->create([
             'tenant_id' => $tenant->id,
             'name' => 'Emergency Fund',
             'type' => AccountType::Savings,
@@ -51,21 +54,25 @@ class FinanceDemoSeeder extends Seeder
             'created_by' => $owner?->id,
         ]);
 
-        $categories = [
-            ['name' => 'Salary', 'type' => CategoryType::Income, 'color' => '#10b981'],
-            ['name' => 'Freelance', 'type' => CategoryType::Income, 'color' => '#06b6d4'],
-            ['name' => 'Groceries', 'type' => CategoryType::Expense, 'color' => '#f59e0b'],
-            ['name' => 'Rent', 'type' => CategoryType::Expense, 'color' => '#ef4444'],
-            ['name' => 'Utilities', 'type' => CategoryType::Expense, 'color' => '#8b5cf6'],
-            ['name' => 'Transport', 'type' => CategoryType::Expense, 'color' => '#3b82f6'],
-            ['name' => 'Entertainment', 'type' => CategoryType::Expense, 'color' => '#ec4899'],
-            ['name' => 'Healthcare', 'type' => CategoryType::Expense, 'color' => '#14b8a6'],
-        ];
+        $categoryModels = Category::query()
+            ->where('tenant_id', $tenant->id)
+            ->get()
+            ->keyBy('name');
 
-        $categoryModels = collect($categories)->map(fn (array $data) => Category::query()->create([
+        Category::query()->create([
             'tenant_id' => $tenant->id,
-            ...$data,
-        ]))->keyBy('name');
+            'name' => 'Rent',
+            'type' => CategoryType::Expense,
+            'color' => '#dc2626',
+            'icon' => 'building',
+            'is_system' => false,
+            'created_by' => $owner?->id,
+        ]);
+
+        $categoryModels = Category::query()
+            ->where('tenant_id', $tenant->id)
+            ->get()
+            ->keyBy('name');
 
         $this->seedTransactions($tenant, $checking, $categoryModels, $owner);
         $this->seedBudget($tenant, $categoryModels, $owner);
@@ -78,7 +85,7 @@ class FinanceDemoSeeder extends Seeder
     private function seedTransactions(
         Tenant $tenant,
         Account $account,
-        $categories,
+        Collection $categories,
         ?User $owner,
     ): void {
         $transactions = [
@@ -123,7 +130,7 @@ class FinanceDemoSeeder extends Seeder
     /**
      * @param  Collection<string, Category>  $categories
      */
-    private function seedBudget(Tenant $tenant, $categories, ?User $owner): void
+    private function seedBudget(Tenant $tenant, Collection $categories, ?User $owner): void
     {
         $budget = Budget::query()->create([
             'tenant_id' => $tenant->id,
