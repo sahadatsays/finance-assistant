@@ -1,24 +1,22 @@
 <?php
 
-namespace App\Http\Requests\Settings;
+namespace App\Http\Requests\Api;
 
 use App\Concerns\ProfileValidationRules;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ProfileUpdateRequest extends FormRequest
+class UpdateProfileRequest extends FormRequest
 {
     use ProfileValidationRules;
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
+     * @return array<string, mixed>
      */
     public function rules(): array
     {
         return [
             ...$this->profileRules($this->user()->id),
+            'avatar_url' => ['nullable', 'string', 'url', 'max:2048'],
             'phone' => ['nullable', 'string', 'max:30'],
             'timezone' => ['nullable', 'string', 'max:64', 'timezone:all'],
             'locale' => ['nullable', 'string', 'max:10'],
