@@ -6,7 +6,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/currency';
+import { useCurrency } from '@/hooks/use-currency';
 
 type DataPoint = { category: string; amount: number; color: string };
 
@@ -15,6 +15,8 @@ export default function CategoryBreakdownChart({
 }: {
     data: DataPoint[];
 }) {
+    const { formatChartValue } = useCurrency();
+
     return (
         <Card className="gap-4 border-0 py-4 shadow-sm">
             <CardHeader className="pb-0">
@@ -46,11 +48,7 @@ export default function CategoryBreakdownChart({
                                     />
                                 ))}
                             </Pie>
-                            <Tooltip
-                                formatter={(value: number) =>
-                                    formatCurrency(value)
-                                }
-                            />
+                            <Tooltip formatter={formatChartValue} />
                         </PieChart>
                     </ResponsiveContainer>
                 )}

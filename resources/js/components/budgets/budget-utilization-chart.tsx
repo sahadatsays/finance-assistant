@@ -15,7 +15,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/currency';
+import { useCurrency } from '@/hooks/use-currency';
 
 type DataPoint = {
     period: string;
@@ -25,6 +25,8 @@ type DataPoint = {
 };
 
 export default function BudgetUtilizationChart({ data }: { data: DataPoint[] }) {
+    const { formatChartValue } = useCurrency();
+
     return (
         <Card className="border-0 shadow-sm">
             <CardHeader>
@@ -46,10 +48,13 @@ export default function BudgetUtilizationChart({ data }: { data: DataPoint[] }) 
                                 vertical={false}
                             />
                             <XAxis dataKey="period" tick={{ fontSize: 12 }} />
-                            <YAxis tick={{ fontSize: 12 }} />
+                            <YAxis
+                                tick={{ fontSize: 12 }}
+                                tickFormatter={formatChartValue}
+                            />
                             <Tooltip
                                 formatter={(value: number, name: string) => [
-                                    formatCurrency(value),
+                                    formatChartValue(value),
                                     name === 'spent' ? 'Spent' : 'Budgeted',
                                 ]}
                             />

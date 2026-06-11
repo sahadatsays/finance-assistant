@@ -6,7 +6,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/currency';
+import { useCurrency } from '@/hooks/use-currency';
 
 type GoalTypeSummary = {
     type: string;
@@ -29,6 +29,8 @@ export default function GoalsByTypeChart({
 }: {
     data: GoalTypeSummary[];
 }) {
+    const { formatChartValue } = useCurrency();
+
     const chartData = data.map((d) => ({
         name: d.label,
         value: d.saved,
@@ -70,11 +72,7 @@ export default function GoalsByTypeChart({
                                     />
                                 ))}
                             </Pie>
-                            <Tooltip
-                                formatter={(value: number) =>
-                                    formatCurrency(value)
-                                }
-                            />
+                            <Tooltip formatter={formatChartValue} />
                         </PieChart>
                     </ResponsiveContainer>
                 )}

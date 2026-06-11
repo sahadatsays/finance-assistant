@@ -14,10 +14,13 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { useCurrency } from '@/hooks/use-currency';
 
 type DataPoint = { month: string; net: number };
 
 export default function MonthlyTrendChart({ data }: { data: DataPoint[] }) {
+    const { formatChartValue } = useCurrency();
+
     return (
         <Card className="gap-4 border-0 py-4 shadow-sm">
             <CardHeader className="pb-0">
@@ -29,8 +32,11 @@ export default function MonthlyTrendChart({ data }: { data: DataPoint[] }) {
                     <LineChart data={data}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                         <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                        <YAxis tick={{ fontSize: 12 }} />
-                        <Tooltip />
+                        <YAxis
+                            tick={{ fontSize: 12 }}
+                            tickFormatter={formatChartValue}
+                        />
+                        <Tooltip formatter={formatChartValue} />
                         <Line
                             type="monotone"
                             dataKey="net"

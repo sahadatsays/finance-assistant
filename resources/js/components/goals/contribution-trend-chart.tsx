@@ -14,7 +14,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/currency';
+import { useCurrency } from '@/hooks/use-currency';
 
 type DataPoint = { month: string; amount: number };
 
@@ -25,6 +25,8 @@ export default function ContributionTrendChart({
     data: DataPoint[];
     title?: string;
 }) {
+    const { formatChartValue } = useCurrency();
+
     return (
         <Card className="border-0 shadow-sm">
             <CardHeader>
@@ -46,10 +48,13 @@ export default function ContributionTrendChart({
                                 vertical={false}
                             />
                             <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                            <YAxis tick={{ fontSize: 12 }} />
+                            <YAxis
+                                tick={{ fontSize: 12 }}
+                                tickFormatter={formatChartValue}
+                            />
                             <Tooltip
                                 formatter={(value: number) => [
-                                    formatCurrency(value),
+                                    formatChartValue(value),
                                     'Contributed',
                                 ]}
                             />

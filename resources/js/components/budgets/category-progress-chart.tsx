@@ -15,7 +15,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/currency';
+import { useCurrency } from '@/hooks/use-currency';
 
 type CategoryProgress = {
     category_id: number;
@@ -34,6 +34,8 @@ export default function CategoryProgressChart({
     categories: CategoryProgress[];
     title?: string;
 }) {
+    const { formatChartValue } = useCurrency();
+
     const data = categories.map((c) => ({
         name: c.category,
         spent: c.spent,
@@ -62,7 +64,11 @@ export default function CategoryProgressChart({
                                 strokeDasharray="3 3"
                                 horizontal={false}
                             />
-                            <XAxis type="number" tick={{ fontSize: 12 }} />
+                            <XAxis
+                                type="number"
+                                tick={{ fontSize: 12 }}
+                                tickFormatter={formatChartValue}
+                            />
                             <YAxis
                                 type="category"
                                 dataKey="name"
@@ -71,7 +77,7 @@ export default function CategoryProgressChart({
                             />
                             <Tooltip
                                 formatter={(value: number, name: string) => [
-                                    formatCurrency(value),
+                                    formatChartValue(value),
                                     name === 'spent' ? 'Spent' : 'Budgeted',
                                 ]}
                                 labelFormatter={(label) => label}
