@@ -1,0 +1,71 @@
+openapi: 3.1.0
+info:
+  title: Finance Assistant API
+  version: 1.0.0
+  description: REST API for the Finance Assistant multi-tenant finance platform.
+
+servers:
+  - url: /api/v1
+    description: API v1
+
+paths:
+  /:
+    get:
+      summary: API version metadata
+      tags: [Foundation]
+      responses:
+        '200':
+          description: Version information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+
+  /health:
+    get:
+      summary: Health check
+      tags: [Foundation]
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Envelope'
+
+components:
+  schemas:
+    Envelope:
+      type: object
+      required: [success, message, data, meta]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+        meta:
+          type: object
+
+    ErrorEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          properties:
+            success:
+              type: boolean
+              enum: [false]
+
+  securitySchemes:
+    sanctum:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+
+security:
+  - sanctum: []
+
+tags:
+  - name: Foundation
+    description: API metadata and health

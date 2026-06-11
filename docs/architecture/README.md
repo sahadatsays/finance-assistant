@@ -5,6 +5,7 @@ Enterprise architecture for a **multi-tenant SaaS personal finance platform**.
 | Document | Description |
 |----------|-------------|
 | [STEP-01-WEB-FOUNDATION.md](./STEP-01-WEB-FOUNDATION.md) | Step 1: Folder, SaaS, roles, database, standards, modules, routes, services, repositories, activity log |
+| [STEP-02-API-FOUNDATION.md](./STEP-02-API-FOUNDATION.md) | Step 2: API versioning, response envelope, Sanctum, rate limiting, logging, exception handling |
 | [STEP-03-TENANT-MANAGEMENT.md](./STEP-03-TENANT-MANAGEMENT.md) | Step 3: Tenant CRUD, status, subscriptions, users, Super Admin API |
 | [STEP-04-SUPER-ADMIN-DASHBOARD.md](./STEP-04-SUPER-ADMIN-DASHBOARD.md) | Step 4: Super Admin dashboard, charts, plans, settings, activity logs |
 | [STEP-05-TENANT-DASHBOARD.md](./STEP-05-TENANT-DASHBOARD.md) | Step 5: Tenant finance dashboard, metrics, charts, widgets |
