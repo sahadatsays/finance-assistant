@@ -12,6 +12,7 @@ use App\Services\Auth\LoginHistoryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use OpenApi\Attributes as OA;
 
 class LoginController extends ApiController
 {
@@ -20,6 +21,41 @@ class LoginController extends ApiController
         private LoginHistoryService $loginHistory,
     ) {}
 
+    #[OA\Post(
+        path: '/auth/login',
+        operationId: 'loginUser',
+        summary: 'Login and obtain Sanctum token',
+        description: 'Authenticates a user and returns a bearer token. Copy the `token` from the response and use it in the Swagger Authorize dialog as `Bearer {token}`.',
+        tags: ['Authentication'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['email', 'password'],
+                properties: [
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'owner@acme.com'),
+                    new OA\Property(property: 'password', type: 'string', format: 'password', example: 'password'),
+                    new OA\Property(property: 'device_name', type: 'string', example: 'swagger-ui'),
+                ],
+            ),
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Login successful',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string', example: 'Login successful.'),
+                        new OA\Property(property: 'data', ref: '#/components/schemas/AuthTokenResponse'),
+                        new OA\Property(property: 'meta', type: 'object'),
+                    ],
+                ),
+            ),
+            new OA\Response(ref: '#/components/responses/ValidationError', response: 422),
+            new OA\Response(ref: '#/components/responses/Unauthorized', response: 401),
+            new OA\Response(ref: '#/components/responses/ServerError', response: 500),
+        ],
+    )]
     public function __invoke(LoginRequest $request): JsonResponse
     {
         $credentials = $request->only('email', 'password');

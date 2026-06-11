@@ -19,6 +19,7 @@
         "laravel/wayfinder": "^0.1.14"
     },
     "require-dev": {
+        "darkaonline/l5-swagger": "^11.0",
         "fakerphp/faker": "^1.24",
         "larastan/larastan": "^3.9",
         "laravel/boost": "^2.2",
@@ -77,6 +78,9 @@
             "@lint:check",
             "@types:check",
             "@php artisan test"
+        ],
+        "docs:swagger": [
+            "@php artisan l5-swagger:generate --all --ansi"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

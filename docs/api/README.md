@@ -14,6 +14,16 @@ REST API documentation for the Finance Assistant platform.
 |---------|--------|---------------|
 | v1 | Stable | [v1 docs](./v1/README.md) |
 
+## Swagger / OpenAPI (local & development)
+
+| Documentation | Swagger UI |
+|---------------|------------|
+| Public APIs | `/api/documentation/public` |
+| Authenticated APIs | `/api/documentation` |
+| Admin APIs | `/api/documentation/admin` |
+
+Generate specs: `composer docs:swagger`. See [swagger/README.md](./swagger/README.md).
+
 ## Quick Links
 
 - [Overview & response format](./v1/README.md)

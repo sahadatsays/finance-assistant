@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Middleware\AbortSwagger;
 use App\Http\Middleware\EnsurePlatformAdmin;
+use App\Http\Middleware\EnsureSwaggerEnabled;
 use App\Http\Middleware\EnsureTenantMember;
 use App\Http\Middleware\EnsureTenantOwner;
 use App\Http\Middleware\HandleAppearance;
@@ -37,6 +39,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'platform-admin' => EnsurePlatformAdmin::class,
             'tenant.member' => EnsureTenantMember::class,
             'tenant.owner' => EnsureTenantOwner::class,
+            'swagger.enabled' => EnsureSwaggerEnabled::class,
+            'abort.swagger' => AbortSwagger::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
