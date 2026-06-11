@@ -60,6 +60,13 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    --color-brand: #7367f0;
+    --color-brand-dark: #5e50ee;
+    --color-brand-light: #8f85f3;
+    --color-surface: #f8f7fa;
+    --color-heading: #2f2b3d;
+    --color-success-brand: #28c76f;
 }
 
 :root {

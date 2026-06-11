@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
-use App\Services\Dev\OneClickLoginService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -12,7 +11,6 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
-use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
@@ -50,15 +48,8 @@ class FortifyServiceProvider extends ServiceProvider
     private function configureViews(): void
     {
         Fortify::loginView(function (Request $request) {
-            $oneClickLogin = app(OneClickLoginService::class);
-
-            return Inertia::render('auth/login', [
-                'canResetPassword' => Features::enabled(Features::resetPasswords()),
-                'status' => $request->session()->get('status'),
-                'oneClickLogin' => [
-                    'enabled' => $oneClickLogin->isEnabled(),
-                    'accounts' => $oneClickLogin->accounts()->all(),
-                ],
+            return view('auth.login', [
+                'seo' => config('marketing.seo.login'),
             ]);
         });
 
@@ -76,8 +67,9 @@ class FortifyServiceProvider extends ServiceProvider
             'status' => $request->session()->get('status'),
         ]));
 
-        Fortify::registerView(fn () => Inertia::render('auth/register', [
-            'passwordRules' => Password::defaults()->toPasswordRulesString(),
+        Fortify::registerView(fn (Request $request) => view('auth.register', [
+            'seo' => config('marketing.seo.register'),
+            'selectedPlan' => $request->query('plan'),
         ]));
 
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));
