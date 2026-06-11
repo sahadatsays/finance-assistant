@@ -5,8 +5,10 @@ namespace App\Modules\Finance\Services;
 use App\Models\Finance\Category;
 use App\Models\Platform\Tenant;
 use App\Models\User;
+use App\Modules\Finance\Enums\CategoryKind;
 use App\Modules\Finance\Enums\CategoryType;
 use App\Services\Platform\ActivityLogService;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
@@ -45,6 +47,50 @@ class CategoryService
             ->where('is_active', false)
             ->orderByDesc('archived_at')
             ->get();
+    }
+
+    /**
+     * @param  array{type?: string, kind?: string, archived?: bool, search?: string}  $filters
+     * @return LengthAwarePaginator<int, Category>
+     */
+    public function paginateForTenant(Tenant $tenant, array $filters = [], int $perPage = 15): LengthAwarePaginator
+    {
+        $query = Category::query()
+            ->withCount('transactions')
+            ->where('tenant_id', $tenant->id);
+
+        if (isset($filters['type'])) {
+            $query->where('type', CategoryType::from($filters['type']));
+        }
+
+        if (isset($filters['kind'])) {
+            $isSystem = $filters['kind'] === CategoryKind::System->value;
+            $query->where('is_system', $isSystem);
+        }
+
+        if ($filters['archived'] ?? false) {
+            $query->where('is_active', false)->orderByDesc('archived_at');
+        } else {
+            $query->where('is_active', true);
+        }
+
+        if (! empty($filters['search'])) {
+            $query->where('name', 'like', '%'.$filters['search'].'%');
+        }
+
+        return $query
+            ->orderByDesc('is_system')
+            ->orderBy('type')
+            ->orderBy('name')
+            ->paginate($perPage);
+    }
+
+    public function findForTenant(Tenant $tenant, int $categoryId): ?Category
+    {
+        return Category::query()
+            ->withCount('transactions')
+            ->where('tenant_id', $tenant->id)
+            ->find($categoryId);
     }
 
     public function ensureSystemCategories(Tenant $tenant): void

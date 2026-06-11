@@ -51,4 +51,16 @@ See [authentication.md](./v1/authentication.md) for request/response details.
 
 See [dashboard.md](./v1/dashboard.md).
 
-Finance feature endpoints will be documented here as they are exposed.
+## Categories
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/categories` | Bearer + verified | List categories (filter + paginate) |
+| GET | `/api/v1/categories/{id}` | Bearer + verified | Show category |
+| POST | `/api/v1/categories` | Bearer + verified (owner) | Create custom category |
+| PUT | `/api/v1/categories/{id}` | Bearer + verified (owner) | Update category |
+| DELETE | `/api/v1/categories/{id}` | Bearer + verified (owner) | Delete custom category |
+
+See [categories.md](./v1/categories.md).
+
+Additional finance feature endpoints will be documented here as they are exposed.
