@@ -8,6 +8,7 @@ use App\Models\Finance\Bill;
 use App\Models\Finance\Budget;
 use App\Models\Finance\Category;
 use App\Models\Finance\Goal;
+use App\Models\Finance\Investment;
 use App\Models\Finance\Transaction;
 use App\Modules\Finance\Contracts\AttachmentStorage;
 use App\Modules\Finance\Reports\Report;
@@ -18,6 +19,7 @@ use App\Policies\Finance\BillPolicy;
 use App\Policies\Finance\BudgetPolicy;
 use App\Policies\Finance\CategoryPolicy;
 use App\Policies\Finance\GoalPolicy;
+use App\Policies\Finance\InvestmentPolicy;
 use App\Policies\Finance\ReportPolicy;
 use App\Policies\Finance\TransactionPolicy;
 use Illuminate\Support\Facades\Gate;
@@ -38,6 +40,7 @@ class FinanceServiceProvider extends ServiceProvider
         Gate::policy(Report::class, ReportPolicy::class);
         Gate::policy(Budget::class, BudgetPolicy::class);
         Gate::policy(Goal::class, GoalPolicy::class);
+        Gate::policy(Investment::class, InvestmentPolicy::class);
         Gate::policy(Category::class, CategoryPolicy::class);
         Gate::policy(Transaction::class, TransactionPolicy::class);
     }
