@@ -80,6 +80,8 @@ return [
                 'app/OpenApi/Schemas',
                 'app/OpenApi/Responses',
                 'app/OpenApi/Authenticated',
+                'app/Http/Controllers/Api/Auth/LogoutController.php',
+                'app/Http/Controllers/Api/Auth/ProfileController.php',
                 'app/Http/Controllers/Api/V1/CategoryController.php',
             ],
         ],
@@ -104,5 +106,29 @@ return [
     */
 
     'tenant_header' => 'X-Tenant-Id',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sanctum Bearer Authentication (OpenAPI)
+    |--------------------------------------------------------------------------
+    |
+    | HTTP Bearer scheme used by Swagger UI Authorize dialog. Tokens are
+    | issued by POST /api/v1/auth/login and sent as Authorization: Bearer {token}.
+    |
+    */
+
+    'sanctum' => [
+        'scheme' => 'bearer',
+        'bearer_format' => 'Sanctum',
+        'header' => 'Authorization',
+        'token_prefix' => 'Bearer',
+        'login_path' => '/api/v1/auth/login',
+        'logout_path' => '/api/v1/auth/logout',
+        'profile_path' => '/api/v1/auth/profile',
+        'demo_credentials' => [
+            'email' => 'owner@acme.com',
+            'password' => 'password',
+        ],
+    ],
 
 ];

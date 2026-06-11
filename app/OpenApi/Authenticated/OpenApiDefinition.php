@@ -4,14 +4,24 @@ namespace App\OpenApi\Authenticated;
 
 use OpenApi\Attributes as OA;
 
-#[OA\OpenApi(openapi: '3.0.0')]
+#[OA\OpenApi(
+    openapi: '3.0.0',
+    security: [['sanctum' => []]],
+)]
 #[OA\Info(
     version: '1.0.0',
     title: 'Finance Assistant API — Authenticated',
-    description: 'Tenant-scoped finance APIs for the Finance Assistant multi-tenant SaaS platform. Requires Laravel Sanctum bearer token. Use the Authorize button with `Bearer {token}` from the login response.',
+    description: <<<'DESC'
+Tenant-scoped finance APIs for the Finance Assistant multi-tenant SaaS platform.
+
+**Authentication:** All endpoints require a Laravel Sanctum bearer token unless marked otherwise.
+Obtain a token from `POST /auth/login` in the **Public** API documentation, then click **Authorize** and paste the token.
+
+Optionally set `X-Tenant-Id` for multi-tenant workspace context.
+DESC,
 )]
 #[OA\Server(url: '/api/v1', description: 'API v1')]
-#[OA\Tag(name: 'Authentication', description: 'Login and session management')]
+#[OA\Tag(name: 'Authentication', description: 'Session management and profile (requires Sanctum token)')]
 #[OA\Tag(name: 'Categories', description: 'Income and expense categories')]
 #[OA\Tag(name: 'Transactions', description: 'Income, expense, and transfer transactions')]
 #[OA\Tag(name: 'Budgets', description: 'Budget planning and analysis')]

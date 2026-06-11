@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\ApiController;
 use App\Http\Requests\Api\Auth\LoginRequest;
 use App\Http\Resources\Api\AuthTokenResource;
 use App\Models\User;
+use App\OpenApi\Shared\SanctumSecurityConfiguration;
 use App\Services\Auth\DeviceTrackingService;
 use App\Services\Auth\LoginHistoryService;
 use Illuminate\Http\JsonResponse;
@@ -25,8 +26,9 @@ class LoginController extends ApiController
         path: '/auth/login',
         operationId: 'loginUser',
         summary: 'Login and obtain Sanctum token',
-        description: 'Authenticates a user and returns a bearer token. Copy the `token` from the response and use it in the Swagger Authorize dialog as `Bearer {token}`.',
+        description: 'Authenticates a user and returns a Sanctum personal access token. Copy `data.token` from the response, click **Authorize** in the Authenticated docs, and paste the token (Swagger UI adds the Bearer prefix automatically).',
         tags: ['Authentication'],
+        security: SanctumSecurityConfiguration::PUBLIC,
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(

@@ -2,6 +2,7 @@
 
 namespace App\OpenApi\PublicApi;
 
+use App\OpenApi\Shared\SanctumSecurityConfiguration;
 use OpenApi\Attributes as OA;
 
 class AuthPaths
@@ -12,6 +13,7 @@ class AuthPaths
         summary: 'Register a new user',
         description: 'Creates a user account and returns a Sanctum bearer token.',
         tags: ['Authentication'],
+        security: SanctumSecurityConfiguration::PUBLIC,
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
@@ -49,6 +51,7 @@ class AuthPaths
         operationId: 'forgotPassword',
         summary: 'Request password reset link',
         tags: ['Authentication'],
+        security: SanctumSecurityConfiguration::PUBLIC,
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
@@ -70,6 +73,7 @@ class AuthPaths
         operationId: 'resetPassword',
         summary: 'Reset password with token',
         tags: ['Authentication'],
+        security: SanctumSecurityConfiguration::PUBLIC,
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(

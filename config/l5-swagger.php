@@ -79,9 +79,9 @@ return [
             'securitySchemes' => [
                 'sanctum' => [
                     'type' => 'http',
-                    'description' => 'Laravel Sanctum bearer token. Login via POST /api/v1/auth/login, copy the `token` value, then click Authorize and enter: Bearer {token}',
+                    'description' => 'Laravel Sanctum personal access token. Login via POST /api/v1/auth/login, copy `data.token`, click Authorize, and paste the token (Swagger UI adds the Bearer prefix).',
                     'scheme' => 'bearer',
-                    'bearerFormat' => 'Sanctum',
+                    'bearerFormat' => $swagger['sanctum']['bearer_format'] ?? 'Sanctum',
                 ],
                 'tenant' => [
                     'type' => 'apiKey',

@@ -27,13 +27,15 @@ Generated files are stored in `storage/api-docs/`.
 
 ## Authentication in Swagger UI
 
-1. Open the **Public** documentation.
-2. Execute `POST /auth/login` with valid credentials (demo: `owner@acme.com` / `password`).
-3. Copy the `token` value from the response.
-4. Click **Authorize** and enter: `Bearer {token}`
-5. Open **Authenticated** documentation — protected endpoints will send the token automatically.
+See **[authentication.md](./authentication.md)** for the full Sanctum bearer workflow.
 
-Optional multi-tenant header: add `X-Tenant-Id` with the tenant ID.
+Quick steps:
+
+1. Open **Public** docs → `POST /auth/login` → copy `data.token`
+2. Open **Authenticated** docs → click **Authorize** → paste token (no `Bearer` prefix)
+3. Test protected endpoints (lock icon) — token is applied automatically
+
+Optional: set `X-Tenant-Id` for multi-tenant workspace context.
 
 ## Project structure
 

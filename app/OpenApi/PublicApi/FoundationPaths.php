@@ -2,6 +2,7 @@
 
 namespace App\OpenApi\PublicApi;
 
+use App\OpenApi\Shared\SanctumSecurityConfiguration;
 use OpenApi\Attributes as OA;
 
 class FoundationPaths
@@ -12,6 +13,7 @@ class FoundationPaths
         summary: 'API version metadata',
         description: 'Returns supported API versions, documentation links, and service metadata.',
         tags: ['Foundation'],
+        security: SanctumSecurityConfiguration::PUBLIC,
         responses: [
             new OA\Response(
                 response: 200,
@@ -51,6 +53,7 @@ class FoundationPaths
         summary: 'Health check',
         description: 'Returns API health status and server timestamp.',
         tags: ['Foundation'],
+        security: SanctumSecurityConfiguration::PUBLIC,
         responses: [
             new OA\Response(
                 response: 200,
