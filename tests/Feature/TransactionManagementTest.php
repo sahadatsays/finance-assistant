@@ -70,6 +70,35 @@ test('user can create income transaction with tags', function () {
     ]);
 });
 
+test('user can create transaction without notes', function () {
+    $owner = User::query()->where('email', 'owner@acme.com')->firstOrFail();
+    $tenant = Tenant::query()->where('slug', 'acme-corp')->firstOrFail();
+    $account = Account::query()->where('tenant_id', $tenant->id)->firstOrFail();
+    $category = Category::query()
+        ->where('tenant_id', $tenant->id)
+        ->where('type', CategoryType::Income)
+        ->firstOrFail();
+
+    $this->actingAs($owner)
+        ->post(route('transactions.store'), [
+            'type' => TransactionType::Income->value,
+            'account_id' => $account->id,
+            'category_id' => $category->id,
+            'amount' => 5000,
+            'occurred_at' => now()->toDateString(),
+        ])
+        ->assertRedirect(route('transactions.index'));
+
+    $this->assertDatabaseHas('transactions', [
+        'tenant_id' => $tenant->id,
+        'account_id' => $account->id,
+        'category_id' => $category->id,
+        'type' => TransactionType::Income->value,
+        'amount' => 5000,
+        'notes' => null,
+    ]);
+});
+
 test('user can create transfer between accounts', function () {
     $owner = User::query()->where('email', 'owner@acme.com')->firstOrFail();
     $tenant = Tenant::query()->where('slug', 'acme-corp')->firstOrFail();
