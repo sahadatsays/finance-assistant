@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Services\Dev\OneClickLoginService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -48,8 +49,14 @@ class FortifyServiceProvider extends ServiceProvider
     private function configureViews(): void
     {
         Fortify::loginView(function (Request $request) {
+            $oneClickLogin = app(OneClickLoginService::class);
+
             return view('auth.login', [
                 'seo' => config('marketing.seo.login'),
+                'oneClickLogin' => [
+                    'enabled' => $oneClickLogin->isEnabled(),
+                    'accounts' => $oneClickLogin->accounts()->all(),
+                ],
             ]);
         });
 

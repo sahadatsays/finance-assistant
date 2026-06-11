@@ -14,11 +14,24 @@ beforeEach(function () {
 test('login page includes one click login accounts when enabled', function () {
     $this->get(route('login'))
         ->assertOk()
-        ->assertInertia(fn ($page) => $page
-            ->component('auth/login')
-            ->where('oneClickLogin.enabled', true)
-            ->has('oneClickLogin.accounts', 7)
-            ->where('oneClickLogin.accounts.0.email', 'admin@financeassistant.com'));
+        ->assertSee('One-Click Login', false)
+        ->assertSee('data-test="one-click-login"', false)
+        ->assertSee('admin@financeassistant.com', false)
+        ->assertSee('owner@acme.com', false)
+        ->assertSee('member@acme.com', false)
+        ->assertSee('owner@startup.com', false)
+        ->assertSee('member@startup.com', false)
+        ->assertSee('owner@suspended.com', false)
+        ->assertSee('guest@example.com', false);
+});
+
+test('login page shows all role labels for seeded accounts', function () {
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertSee('Super Admin', false)
+        ->assertSee('Tenant Owner', false)
+        ->assertSee('Tenant User', false)
+        ->assertSee('Guest', false);
 });
 
 test('super admin can one click login to admin dashboard', function () {
@@ -39,10 +52,30 @@ test('tenant owner can one click login to user dashboard', function () {
     $this->assertAuthenticatedAs($owner);
 });
 
+test('tenant user can one click login to user dashboard', function () {
+    $member = User::query()->where('email', 'member@acme.com')->firstOrFail();
+
+    $this->post(route('dev.login', $member))
+        ->assertRedirect(route('dashboard', absolute: false));
+
+    $this->assertAuthenticatedAs($member);
+});
+
+test('guest user can one click login to user dashboard', function () {
+    $guest = User::query()->where('email', 'guest@example.com')->firstOrFail();
+
+    $this->post(route('dev.login', $guest))
+        ->assertRedirect(route('dashboard', absolute: false));
+
+    $this->assertAuthenticatedAs($guest);
+});
+
 test('one click login is unavailable when disabled', function () {
     config(['dev.one_click_login' => false]);
 
     $user = User::query()->where('email', 'admin@financeassistant.com')->firstOrFail();
+
+    $this->get(route('login'))->assertOk()->assertDontSee('One-Click Login', false);
 
     $this->post(route('dev.login', $user))
         ->assertNotFound();

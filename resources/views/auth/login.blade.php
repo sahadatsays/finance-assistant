@@ -10,6 +10,8 @@
         <div class="mb-4 rounded-lg border border-success-brand/30 bg-success-brand/10 px-4 py-3 text-sm text-heading">{{ session('status') }}</div>
     @endif
 
+    @include('partials.auth.one-click-login')
+
     <form method="POST" action="{{ route('login') }}" class="space-y-5">
         @csrf
         <div>
