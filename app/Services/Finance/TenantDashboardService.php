@@ -13,6 +13,7 @@ use App\Modules\Finance\Services\BudgetAnalyticsService;
 use App\Modules\Finance\Services\GoalAnalyticsService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class TenantDashboardService
@@ -36,33 +37,31 @@ class TenantDashboardService
         $startOfMonth = Carbon::now()->startOfMonth();
         $endOfMonth = Carbon::now()->endOfMonth();
 
-        $totalIncome = (float) Transaction::query()
+        $monthlyTotals = Transaction::query()
+            ->selectRaw('type, SUM(amount) as total')
             ->where('tenant_id', $tenant->id)
-            ->where('type', TransactionType::Income)
+            ->whereIn('type', [TransactionType::Income, TransactionType::Expense])
             ->whereBetween('occurred_at', [$startOfMonth, $endOfMonth])
-            ->sum('amount');
+            ->groupBy('type')
+            ->pluck('total', 'type');
 
-        $totalExpense = (float) Transaction::query()
-            ->where('tenant_id', $tenant->id)
-            ->where('type', TransactionType::Expense)
-            ->whereBetween('occurred_at', [$startOfMonth, $endOfMonth])
-            ->sum('amount');
+        $totalIncome = (float) ($monthlyTotals[TransactionType::Income->value] ?? 0);
+        $totalExpense = (float) ($monthlyTotals[TransactionType::Expense->value] ?? 0);
 
-        $totalSavings = (float) Account::query()
+        $accountTotals = Account::query()
+            ->selectRaw('type, SUM(balance) as total')
             ->where('tenant_id', $tenant->id)
-            ->where('type', AccountType::Savings)
             ->where('is_active', true)
-            ->sum('balance');
+            ->groupBy('type')
+            ->pluck('total', 'type');
+
+        $netWorth = (float) $accountTotals->sum();
+        $totalSavings = (float) ($accountTotals[AccountType::Savings->value] ?? 0);
 
         $totalSavings += (float) Goal::query()
             ->where('tenant_id', $tenant->id)
             ->where('is_active', true)
             ->sum('current_amount');
-
-        $netWorth = (float) Account::query()
-            ->where('tenant_id', $tenant->id)
-            ->where('is_active', true)
-            ->sum('balance');
 
         $budgetStatus = $this->budgetStatus($tenant, $startOfMonth, $endOfMonth);
 
@@ -108,6 +107,94 @@ class TenantDashboardService
     }
 
     /**
+     * @return array{
+     *     tenant: array{id: int, name: string, slug: string, currency: string},
+     *     metrics: array{
+     *         total_income: float,
+     *         total_expense: float,
+     *         total_savings: float,
+     *         net_worth: float,
+     *         budget_status: array{spent: float, budgeted: float, percentage: float, status: string},
+     *         savings_goal_progress: array{
+     *             summary: array{total_saved: float, total_target: float, percentage: float, active_count: int, completed_count: int},
+     *             goals: list<array{id: int, name: string, current_amount: float, target_amount: float, percentage: float, color: string, target_date: string|null, status: string}>
+     *         }
+     *     },
+     *     charts: array{
+     *         income_vs_expense: list<array{month: string, income: float, expense: float}>,
+     *         monthly_trend: list<array{month: string, net: float}>,
+     *         category_breakdown: list<array{category: string, amount: float, color: string}>
+     *     }
+     * }
+     */
+    public function forApi(Tenant $tenant): array
+    {
+        if (! config('api.dashboard.cache_enabled', true)) {
+            return $this->buildApiPayload($tenant);
+        }
+
+        $cacheKey = $this->apiCacheKey($tenant);
+        $ttl = config('api.dashboard.cache_ttl', 300);
+
+        return Cache::remember($cacheKey, $ttl, fn (): array => $this->buildApiPayload($tenant));
+    }
+
+    public function forgetApiCache(Tenant $tenant): void
+    {
+        Cache::forget($this->apiCacheKey($tenant));
+    }
+
+    /**
+     * @return array{
+     *     tenant: array{id: int, name: string, slug: string, currency: string},
+     *     metrics: array<string, mixed>,
+     *     charts: array<string, mixed>
+     * }
+     */
+    private function buildApiPayload(Tenant $tenant): array
+    {
+        $metrics = $this->metrics($tenant);
+        $goalDashboard = $this->goalAnalytics->dashboard($tenant);
+
+        $metrics['savings_goal_progress'] = [
+            'summary' => [
+                ...$goalDashboard['summary'],
+                'percentage' => $goalDashboard['summary']['total_target'] > 0
+                    ? round(($goalDashboard['summary']['total_saved'] / $goalDashboard['summary']['total_target']) * 100, 1)
+                    : 0.0,
+            ],
+            'goals' => collect($goalDashboard['goals'])
+                ->map(fn (array $goal): array => [
+                    'id' => $goal['id'],
+                    'name' => $goal['name'],
+                    'current_amount' => $goal['current_amount'],
+                    'target_amount' => $goal['target_amount'],
+                    'percentage' => $goal['progress']['percentage'],
+                    'color' => $goal['color'],
+                    'target_date' => $goal['target_date'],
+                    'status' => $goal['progress']['status'],
+                ])
+                ->all(),
+        ];
+
+        return [
+            'tenant' => [
+                'id' => $tenant->id,
+                'name' => $tenant->name,
+                'slug' => $tenant->slug,
+                'currency' => $tenant->settings['currency'] ?? 'USD',
+            ],
+            'metrics' => $metrics,
+            'charts' => $this->charts($tenant),
+        ];
+    }
+
+    private function apiCacheKey(Tenant $tenant): string
+    {
+        return sprintf('api.dashboard.%d.%s', $tenant->id, now()->format('Y-m'));
+    }
+
+    /**
      * @return array{spent: float, budgeted: float, percentage: float, status: string}
      */
     private function budgetStatus(Tenant $tenant, Carbon $start, Carbon $end): array
@@ -140,13 +227,12 @@ class TenantDashboardService
         $months = $this->lastSixMonths();
         $since = Carbon::now()->subMonths(5)->startOfMonth();
 
-        $income = $this->monthlyTotals($tenant, TransactionType::Income, $since);
-        $expense = $this->monthlyTotals($tenant, TransactionType::Expense, $since);
+        $monthlyTotals = $this->combinedMonthlyTotals($tenant, $since);
 
         return $months->map(fn (string $month) => [
             'month' => $month,
-            'income' => round((float) ($income[$month] ?? 0), 2),
-            'expense' => round((float) ($expense[$month] ?? 0), 2),
+            'income' => round((float) ($monthlyTotals[$month][TransactionType::Income->value] ?? 0), 2),
+            'expense' => round((float) ($monthlyTotals[$month][TransactionType::Expense->value] ?? 0), 2),
         ])->all();
     }
 
@@ -183,12 +269,15 @@ class TenantDashboardService
         $months = $this->lastSixMonths();
         $since = Carbon::now()->subMonths(5)->startOfMonth();
 
-        $income = $this->monthlyTotals($tenant, TransactionType::Income, $since);
-        $expense = $this->monthlyTotals($tenant, TransactionType::Expense, $since);
+        $monthlyTotals = $this->combinedMonthlyTotals($tenant, $since);
 
         return $months->map(fn (string $month) => [
             'month' => $month,
-            'net' => round((float) ($income[$month] ?? 0) - (float) ($expense[$month] ?? 0), 2),
+            'net' => round(
+                (float) ($monthlyTotals[$month][TransactionType::Income->value] ?? 0)
+                - (float) ($monthlyTotals[$month][TransactionType::Expense->value] ?? 0),
+                2,
+            ),
         ])->all();
     }
 
@@ -252,29 +341,30 @@ class TenantDashboardService
     }
 
     /**
-     * @return array<string, float|int|string>
+     * @return array<string, array<string, float>>
      */
-    private function monthlyTotals(Tenant $tenant, TransactionType $type, Carbon $since): array
+    private function combinedMonthlyTotals(Tenant $tenant, Carbon $since): array
     {
-        if (DB::connection()->getDriverName() === 'sqlite') {
-            return Transaction::query()
-                ->selectRaw("strftime('%Y-%m', occurred_at) as month, SUM(amount) as total")
-                ->where('tenant_id', $tenant->id)
-                ->where('type', $type)
-                ->where('occurred_at', '>=', $since)
-                ->groupBy('month')
-                ->pluck('total', 'month')
-                ->all();
+        $monthExpression = DB::connection()->getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m', occurred_at)"
+            : "DATE_FORMAT(occurred_at, '%Y-%m')";
+
+        $rows = Transaction::query()
+            ->selectRaw("{$monthExpression} as month, type, SUM(amount) as total")
+            ->where('tenant_id', $tenant->id)
+            ->whereIn('type', [TransactionType::Income, TransactionType::Expense])
+            ->where('occurred_at', '>=', $since)
+            ->groupBy('month', 'type')
+            ->get();
+
+        $totals = [];
+
+        foreach ($rows as $row) {
+            $type = $row->type instanceof TransactionType ? $row->type->value : (string) $row->type;
+            $totals[$row->month][$type] = (float) $row->total;
         }
 
-        return Transaction::query()
-            ->selectRaw("DATE_FORMAT(occurred_at, '%Y-%m') as month, SUM(amount) as total")
-            ->where('tenant_id', $tenant->id)
-            ->where('type', $type)
-            ->where('occurred_at', '>=', $since)
-            ->groupBy('month')
-            ->pluck('total', 'month')
-            ->all();
+        return $totals;
     }
 
     /**

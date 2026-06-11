@@ -56,4 +56,15 @@ return [
         'log_response_body' => (bool) env('API_LOG_RESPONSE_BODY', false),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard API Caching
+    |--------------------------------------------------------------------------
+    */
+
+    'dashboard' => [
+        'cache_enabled' => (bool) env('API_DASHBOARD_CACHE_ENABLED', true),
+        'cache_ttl' => (int) env('API_DASHBOARD_CACHE_TTL', 300),
+    ],
+
 ];

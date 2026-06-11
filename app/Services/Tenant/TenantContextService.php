@@ -34,19 +34,35 @@ class TenantContextService
             return null;
         }
 
-        $sessionTenantId = $request->session()->get(self::SESSION_KEY);
+        $requestedTenantId = $this->resolveRequestedTenantId($request);
 
-        if ($sessionTenantId !== null) {
-            $tenant = $tenants->firstWhere('id', $sessionTenantId);
+        if ($requestedTenantId !== null) {
+            $tenant = $tenants->firstWhere('id', $requestedTenantId);
 
             if ($tenant !== null) {
+                if ($request->hasSession()) {
+                    $this->setCurrent($tenant, $request);
+                }
+
                 return $tenant;
+            }
+        }
+
+        if ($request->hasSession()) {
+            $sessionTenantId = $request->session()->get(self::SESSION_KEY);
+
+            if ($sessionTenantId !== null) {
+                $tenant = $tenants->firstWhere('id', $sessionTenantId);
+
+                if ($tenant !== null) {
+                    return $tenant;
+                }
             }
         }
 
         $tenant = $tenants->first();
 
-        if ($tenant !== null) {
+        if ($tenant !== null && $request->hasSession()) {
             $this->setCurrent($tenant, $request);
         }
 
@@ -55,11 +71,19 @@ class TenantContextService
 
     public function setCurrent(Tenant $tenant, Request $request): void
     {
+        if (! $request->hasSession()) {
+            return;
+        }
+
         $request->session()->put(self::SESSION_KEY, $tenant->id);
     }
 
     public function current(Request $request): ?Tenant
     {
+        if (! $request->hasSession()) {
+            return null;
+        }
+
         $tenantId = $request->session()->get(self::SESSION_KEY);
 
         if ($tenantId === null) {
@@ -67,5 +91,26 @@ class TenantContextService
         }
 
         return Tenant::query()->find($tenantId);
+    }
+
+    private function resolveRequestedTenantId(Request $request): ?int
+    {
+        $header = $request->header('X-Tenant-Id');
+
+        if (is_string($header) && $header !== '' && ctype_digit($header)) {
+            return (int) $header;
+        }
+
+        $query = $request->query('tenant_id');
+
+        if (is_string($query) && $query !== '' && ctype_digit($query)) {
+            return (int) $query;
+        }
+
+        if (is_int($query)) {
+            return $query;
+        }
+
+        return null;
     }
 }

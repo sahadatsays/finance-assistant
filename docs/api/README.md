@@ -43,4 +43,12 @@ REST API documentation for the Finance Assistant platform.
 
 See [authentication.md](./v1/authentication.md) for request/response details.
 
+## Dashboard
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/dashboard` | Bearer + verified | Finance metrics and charts |
+
+See [dashboard.md](./v1/dashboard.md).
+
 Finance feature endpoints will be documented here as they are exposed.
