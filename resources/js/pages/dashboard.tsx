@@ -45,7 +45,7 @@ type Charts = {
 type Widgets = {
     recent_transactions: {
         id: number;
-        description: string;
+        notes: string | null;
         amount: number;
         type: string;
         category: string | null;

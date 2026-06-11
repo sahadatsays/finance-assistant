@@ -9,6 +9,7 @@ Enterprise architecture for a **multi-tenant SaaS personal finance platform**.
 | [STEP-04-SUPER-ADMIN-DASHBOARD.md](./STEP-04-SUPER-ADMIN-DASHBOARD.md) | Step 4: Super Admin dashboard, charts, plans, settings, activity logs |
 | [STEP-05-TENANT-DASHBOARD.md](./STEP-05-TENANT-DASHBOARD.md) | Step 5: Tenant finance dashboard, metrics, charts, widgets |
 | [STEP-06-CATEGORIES-MODULE.md](./STEP-06-CATEGORIES-MODULE.md) | Step 6: Category management, system/custom categories, CRUD |
+| [STEP-07-TRANSACTIONS-MODULE.md](./STEP-07-TRANSACTIONS-MODULE.md) | Step 7: Transactions, transfers, tags, attachments, export |
 
 ## Technology Stack (Target)
 

@@ -120,7 +120,7 @@ class FinanceDemoSeeder extends Seeder
                 'category_id' => $categories[$tx['cat']]->id,
                 'type' => $tx['type'],
                 'amount' => $tx['amount'],
-                'description' => $tx['desc'],
+                'notes' => $tx['desc'],
                 'occurred_at' => $occurredAt,
                 'created_by' => $owner?->id,
             ]);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Concerns;
 
 use App\Models\Finance\Category;
+use App\Models\Finance\Transaction;
 use App\Models\Platform\Tenant;
 use App\Services\Tenant\TenantContextService;
 use Illuminate\Http\Request;
@@ -23,6 +24,13 @@ trait ResolvesTenantContext
     protected function assertCategoryBelongsToTenant(Category $category, Tenant $tenant): void
     {
         if ($category->tenant_id !== $tenant->id) {
+            abort(404);
+        }
+    }
+
+    protected function assertTransactionBelongsToTenant(Transaction $transaction, Tenant $tenant): void
+    {
+        if ($transaction->tenant_id !== $tenant->id) {
             abort(404);
         }
     }

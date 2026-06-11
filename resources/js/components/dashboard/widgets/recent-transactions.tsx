@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 
 type Transaction = {
     id: number;
-    description: string;
+    notes: string | null;
     amount: number;
     type: string;
     category: string | null;
@@ -57,7 +57,7 @@ export default function RecentTransactions({
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium">
-                                        {tx.description}
+                                        {tx.notes ?? 'No notes'}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                         {tx.category ?? 'Uncategorized'} ·{' '}

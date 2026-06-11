@@ -86,7 +86,7 @@ class TenantDashboardService
 
     /**
      * @return array{
-     *     recent_transactions: list<array{id: int, description: string, amount: float, type: string, category: string|null, occurred_at: string}>,
+     *     recent_transactions: list<array{id: int, notes: string|null, amount: float, type: string, category: string|null, occurred_at: string}>,
      *     budget_alerts: list<array{id: int, name: string, spent: float, budgeted: float, percentage: float, status: string}>,
      *     savings_goals: list<array{id: int, name: string, current_amount: float, target_amount: float, percentage: float, color: string, target_date: string|null}>
      * }
@@ -191,7 +191,7 @@ class TenantDashboardService
     }
 
     /**
-     * @return list<array{id: int, description: string, amount: float, type: string, category: string|null, occurred_at: string}>
+     * @return list<array{id: int, notes: string|null, amount: float, type: string, category: string|null, occurred_at: string}>
      */
     private function recentTransactions(Tenant $tenant): array
     {
@@ -203,7 +203,7 @@ class TenantDashboardService
             ->get()
             ->map(fn (Transaction $transaction) => [
                 'id' => $transaction->id,
-                'description' => $transaction->description,
+                'notes' => $transaction->notes,
                 'amount' => round((float) $transaction->amount, 2),
                 'type' => $transaction->type->value,
                 'category' => $transaction->category?->name,

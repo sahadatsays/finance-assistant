@@ -21,4 +21,9 @@ enum TenantUserRole: string
     {
         return $this === self::Owner;
     }
+
+    public function canManageTransactions(): bool
+    {
+        return true;
+    }
 }
