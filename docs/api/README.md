@@ -113,4 +113,17 @@ See [goals.md](./v1/goals.md).
 
 See [attachments.md](./v1/attachments.md).
 
+## Reports
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/reports/summary` | Bearer + verified | Income, expense, net, net worth |
+| GET | `/api/v1/reports/monthly` | Bearer + verified | Monthly income and expense trend |
+| GET | `/api/v1/reports/category` | Bearer + verified | Expense breakdown by category |
+| GET | `/api/v1/reports/cashflow` | Bearer + verified | Monthly cashflow |
+| GET | `/api/v1/reports/net-worth` | Bearer + verified | Net worth and history |
+| POST | `/api/v1/reports/export` | Bearer + verified | Export JSON, CSV, or PDF |
+
+See [reports.md](./v1/reports.md).
+
 Additional finance feature endpoints will be documented here as they are exposed.

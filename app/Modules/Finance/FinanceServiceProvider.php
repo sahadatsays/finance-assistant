@@ -8,11 +8,13 @@ use App\Models\Finance\Category;
 use App\Models\Finance\Goal;
 use App\Models\Finance\Transaction;
 use App\Modules\Finance\Contracts\AttachmentStorage;
+use App\Modules\Finance\Reports\Report;
 use App\Modules\Finance\Services\AttachmentStorageService;
 use App\Policies\Finance\AttachmentPolicy;
 use App\Policies\Finance\BudgetPolicy;
 use App\Policies\Finance\CategoryPolicy;
 use App\Policies\Finance\GoalPolicy;
+use App\Policies\Finance\ReportPolicy;
 use App\Policies\Finance\TransactionPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -27,6 +29,7 @@ class FinanceServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Attachment::class, AttachmentPolicy::class);
+        Gate::policy(Report::class, ReportPolicy::class);
         Gate::policy(Budget::class, BudgetPolicy::class);
         Gate::policy(Goal::class, GoalPolicy::class);
         Gate::policy(Category::class, CategoryPolicy::class);
