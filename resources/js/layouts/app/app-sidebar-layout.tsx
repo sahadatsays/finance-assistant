@@ -2,6 +2,7 @@ import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
 import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
+import QuickTransactionEntry from '@/components/transactions/quick-transaction-entry';
 import type { AppLayoutProps } from '@/types';
 
 export default function AppSidebarLayout({
@@ -16,6 +17,7 @@ export default function AppSidebarLayout({
                 <div className="flex flex-1 flex-col gap-6 p-4 md:gap-8 md:p-6 md:pb-8">
                     {children}
                 </div>
+                <QuickTransactionEntry />
             </AppContent>
         </AppShell>
     );

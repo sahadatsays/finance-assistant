@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'tag',
+    'banknote',
+    'briefcase',
+    'shopping-cart',
+    'car',
+    'home',
+    'heart-pulse',
+    'tv',
+    'gift',
+    'receipt',
+    'building',
+    'wallet',
+    'utensils',
+    'plane',
+    'graduation-cap',
+    'shirt',
+    'fuel',
+    'smartphone',
+    'coffee',
+    'dumbbell',
+    'baby',
+    'dog',
+    'sparkles',
+    'circle-dollar-sign',
+];

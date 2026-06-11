@@ -15,7 +15,7 @@ import TenantSwitcher from '@/components/dashboard/tenant-switcher';
 import BudgetAlerts from '@/components/dashboard/widgets/budget-alerts';
 import RecentTransactions from '@/components/dashboard/widgets/recent-transactions';
 import SavingsGoals from '@/components/dashboard/widgets/savings-goals';
-import { formatCurrency } from '@/lib/currency';
+import { useCurrency } from '@/hooks/use-currency';
 import { dashboard } from '@/routes';
 
 type TenantOption = { id: number; name: string; slug: string };
@@ -94,6 +94,8 @@ export default function Dashboard({
     charts,
     widgets,
 }: Props) {
+    const { formatCurrency } = useCurrency();
+
     if (tenant === null || metrics === null || charts === null || widgets === null) {
         return (
             <>

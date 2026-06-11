@@ -22,7 +22,7 @@ class StoreCategoryRequest extends FormRequest
             'name' => ['required', 'string', 'max:64'],
             'type' => ['required', 'string', Rule::enum(CategoryType::class)],
             'color' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
-            'icon' => ['nullable', 'string', 'max:32'],
+            'icon' => ['nullable', 'string', Rule::in(config('category-icons'))],
         ];
     }
 }

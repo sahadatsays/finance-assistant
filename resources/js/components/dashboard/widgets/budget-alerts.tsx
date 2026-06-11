@@ -7,7 +7,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/currency';
+import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
 
 type BudgetAlert = {
@@ -20,6 +20,8 @@ type BudgetAlert = {
 };
 
 export default function BudgetAlerts({ alerts }: { alerts: BudgetAlert[] }) {
+    const { formatCurrency } = useCurrency();
+
     return (
         <Card className="gap-4 border-0 py-4 shadow-sm">
             <CardHeader className="pb-0">

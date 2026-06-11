@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Finance;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateCategoryRequest extends FormRequest
 {
@@ -19,7 +20,7 @@ class UpdateCategoryRequest extends FormRequest
         return [
             'name' => ['sometimes', 'required', 'string', 'max:64'],
             'color' => ['sometimes', 'required', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
-            'icon' => ['nullable', 'string', 'max:32'],
+            'icon' => ['nullable', 'string', Rule::in(config('category-icons'))],
         ];
     }
 }

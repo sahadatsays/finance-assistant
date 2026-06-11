@@ -10,6 +10,7 @@ import { index as devicesIndex } from '@/routes/devices';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import { index as sessionsIndex } from '@/routes/sessions';
+import { edit as editWorkspace } from '@/routes/workspace';
 import type { NavItem } from '@/types';
 
 const sidebarNavItems: NavItem[] = [
@@ -36,6 +37,11 @@ const sidebarNavItems: NavItem[] = [
     {
         title: 'Appearance',
         href: editAppearance(),
+        icon: null,
+    },
+    {
+        title: 'Workspace',
+        href: editWorkspace(),
         icon: null,
     },
 ];

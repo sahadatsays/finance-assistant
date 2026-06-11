@@ -3,6 +3,7 @@
 namespace App\Modules\Tenant\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateTenantSettingsRequest extends FormRequest
 {
@@ -16,7 +17,7 @@ class UpdateTenantSettingsRequest extends FormRequest
             'settings' => ['sometimes', 'required', 'array'],
             'settings.timezone' => ['nullable', 'string', 'max:64', 'timezone:all'],
             'settings.locale' => ['nullable', 'string', 'max:10'],
-            'settings.currency' => ['nullable', 'string', 'size:3'],
+            'settings.currency' => ['nullable', 'string', Rule::in(collect(config('currencies'))->pluck('code')->all())],
         ];
     }
 }

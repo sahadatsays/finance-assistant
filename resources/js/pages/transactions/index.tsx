@@ -16,9 +16,11 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import TransactionFormFields from '@/components/transactions/transaction-form-fields';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { formatCurrency } from '@/lib/currency';
+import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
 import { exportMethod as exportTransactions } from '@/routes/transactions';
 import {
@@ -92,136 +94,6 @@ function TypeIcon({ type }: { type: string }) {
     return <ArrowUpRight className="size-4" />;
 }
 
-function TransactionFormFields({
-    accounts,
-    categories,
-    defaultType = 'expense',
-    transaction,
-}: {
-    accounts: Props['accounts'];
-    categories: Props['categories'];
-    defaultType?: string;
-    transaction?: TransactionItem;
-}) {
-    const [type, setType] = useState(transaction?.type ?? defaultType);
-
-    const filteredCategories = categories.filter((c) => c.type === type);
-
-    return (
-        <>
-            <div className="grid gap-2">
-                <Label>Type</Label>
-                <select
-                    name="type"
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
-                    className="flex h-9 w-full rounded-md border bg-transparent px-3 text-sm"
-                >
-                    <option value="income">Income</option>
-                    <option value="expense">Expense</option>
-                    <option value="transfer">Transfer</option>
-                </select>
-            </div>
-            <div className="grid gap-2">
-                <Label>Account</Label>
-                <select
-                    name="account_id"
-                    defaultValue={transaction?.account?.id}
-                    required
-                    className="flex h-9 w-full rounded-md border bg-transparent px-3 text-sm"
-                >
-                    <option value="">Select account</option>
-                    {accounts.map((a) => (
-                        <option key={a.id} value={a.id}>
-                            {a.name}
-                        </option>
-                    ))}
-                </select>
-            </div>
-            {type === 'transfer' && (
-                <div className="grid gap-2">
-                    <Label>Transfer To</Label>
-                    <select
-                        name="transfer_account_id"
-                        defaultValue={transaction?.transfer_account?.id}
-                        required
-                        className="flex h-9 w-full rounded-md border bg-transparent px-3 text-sm"
-                    >
-                        <option value="">Select account</option>
-                        {accounts.map((a) => (
-                            <option key={a.id} value={a.id}>
-                                {a.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            )}
-            {type !== 'transfer' && (
-                <div className="grid gap-2">
-                    <Label>Category</Label>
-                    <select
-                        name="category_id"
-                        defaultValue={transaction?.category?.id}
-                        required
-                        className="flex h-9 w-full rounded-md border bg-transparent px-3 text-sm"
-                    >
-                        <option value="">Select category</option>
-                        {filteredCategories.map((c) => (
-                            <option key={c.id} value={c.id}>
-                                {c.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            )}
-            <div className="grid gap-2">
-                <Label>Amount</Label>
-                <Input
-                    name="amount"
-                    type="number"
-                    step="0.01"
-                    min="0.01"
-                    defaultValue={transaction?.amount}
-                    required
-                />
-            </div>
-            <div className="grid gap-2">
-                <Label>Date</Label>
-                <Input
-                    name="occurred_at"
-                    type="date"
-                    defaultValue={
-                        transaction
-                            ? transaction.occurred_at.slice(0, 10)
-                            : new Date().toISOString().slice(0, 10)
-                    }
-                    required
-                />
-            </div>
-            <div className="grid gap-2 md:col-span-2">
-                <Label>Notes</Label>
-                <Input
-                    name="notes"
-                    defaultValue={transaction?.notes ?? ''}
-                    placeholder="Optional notes"
-                />
-            </div>
-            <div className="grid gap-2 md:col-span-2">
-                <Label>Tags</Label>
-                <Input
-                    name="tags"
-                    defaultValue={transaction?.tags.map((t) => t.name).join(', ')}
-                    placeholder="personal, recurring (comma-separated)"
-                />
-            </div>
-            <div className="grid gap-2 md:col-span-2">
-                <Label>Attachment</Label>
-                <Input name="attachment" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" />
-            </div>
-        </>
-    );
-}
-
 export default function TransactionsIndex({
     tenant,
     transactions,
@@ -232,6 +104,7 @@ export default function TransactionsIndex({
     tags,
     permissions,
 }: Props) {
+    const { formatCurrency } = useCurrency();
     const [createOpen, setCreateOpen] = useState(false);
     const [editing, setEditing] = useState<TransactionItem | null>(null);
 
@@ -273,7 +146,7 @@ export default function TransactionsIndex({
                         {permissions.create && (
                             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                                 <DialogTrigger asChild>
-                                    <Button className="bg-violet-600 hover:bg-violet-700">
+                                    <Button variant="brand">
                                         <Plus className="mr-2 size-4" />
                                         Add Transaction
                                     </Button>
@@ -302,8 +175,8 @@ export default function TransactionsIndex({
                                                 <div className="md:col-span-2">
                                                     <Button
                                                         type="submit"
+                                                        variant="brand"
                                                         disabled={processing}
-                                                        className="bg-violet-600 hover:bg-violet-700"
                                                     >
                                                         Create Transaction
                                                     </Button>
@@ -398,18 +271,18 @@ export default function TransactionsIndex({
                             </div>
                             <div className="grid gap-2">
                                 <Label>From</Label>
-                                <Input
+                                <DatePicker
                                     name="date_from"
-                                    type="date"
                                     defaultValue={filters.date_from}
+                                    placeholder="Start date"
                                 />
                             </div>
                             <div className="grid gap-2">
                                 <Label>To</Label>
-                                <Input
+                                <DatePicker
                                     name="date_to"
-                                    type="date"
                                     defaultValue={filters.date_to}
+                                    placeholder="End date"
                                 />
                             </div>
                             <div className="flex items-end">
@@ -577,10 +450,10 @@ export default function TransactionsIndex({
                                                                 <div className="md:col-span-2">
                                                                     <Button
                                                                         type="submit"
+                                                                        variant="brand"
                                                                         disabled={
                                                                             processing
                                                                         }
-                                                                        className="bg-violet-600 hover:bg-violet-700"
                                                                     >
                                                                         Save Changes
                                                                     </Button>

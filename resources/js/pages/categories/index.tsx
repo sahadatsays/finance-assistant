@@ -1,5 +1,7 @@
 import { Form, Head, Link, router } from '@inertiajs/react';
 import CategoryController from '@/actions/App/Http/Controllers/Finance/CategoryController';
+import CategoryIcon from '@/components/categories/category-icon';
+import CategoryIconPicker from '@/components/categories/category-icon-picker';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -59,21 +61,6 @@ type Props = {
     permissions: Permissions;
 };
 
-const ICON_OPTIONS = [
-    'tag',
-    'banknote',
-    'briefcase',
-    'shopping-cart',
-    'car',
-    'home',
-    'heart-pulse',
-    'tv',
-    'gift',
-    'receipt',
-    'building',
-    'wallet',
-];
-
 type Tab = 'income' | 'expense' | 'archived';
 
 export default function CategoriesIndex({
@@ -114,12 +101,8 @@ export default function CategoriesIndex({
                             (t) => (
                                 <Button
                                     key={t}
-                                    variant={tab === t ? 'default' : 'outline'}
+                                    variant={tab === t ? 'brand' : 'outline'}
                                     size="sm"
-                                    className={cn(
-                                        tab === t &&
-                                            'bg-violet-600 hover:bg-violet-700',
-                                    )}
                                     onClick={() => {
                                         setTab(t);
                                         if (t === 'archived') {
@@ -173,7 +156,10 @@ export default function CategoriesIndex({
                                                 backgroundColor: category.color,
                                             }}
                                         >
-                                            <Tag className="size-4" />
+                                            <CategoryIcon
+                                                icon={category.icon}
+                                                className="size-4"
+                                            />
                                         </div>
                                         <div>
                                             <CardTitle className="text-base">
@@ -188,8 +174,8 @@ export default function CategoriesIndex({
                                         variant="secondary"
                                         className={cn(
                                             category.is_system
-                                                ? 'bg-violet-100 text-violet-700'
-                                                : 'bg-slate-100 text-slate-700',
+                                                ? 'bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300'
+                                                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
                                         )}
                                     >
                                         {category.is_system
@@ -272,23 +258,17 @@ export default function CategoriesIndex({
                                                                 required
                                                             />
                                                         </div>
-                                                        <div className="grid gap-2">
-                                                            <Label>Icon</Label>
-                                                            <Input
-                                                                name="icon"
-                                                                defaultValue={
-                                                                    category.icon ??
-                                                                    ''
-                                                                }
-                                                                placeholder="tag"
-                                                            />
-                                                        </div>
+                                                        <CategoryIconPicker
+                                                            defaultValue={
+                                                                category.icon
+                                                            }
+                                                        />
                                                         <Button
                                                             type="submit"
+                                                            variant="brand"
                                                             disabled={
                                                                 processing
                                                             }
-                                                            className="bg-violet-600 hover:bg-violet-700"
                                                         >
                                                             Save Changes
                                                         </Button>
@@ -335,7 +315,7 @@ export default function CategoriesIndex({
                                             )}
                                             method="delete"
                                             as="button"
-                                            className="inline-flex h-8 items-center rounded-md border border-rose-200 px-3 text-sm text-rose-600 hover:bg-rose-50"
+                                            className="inline-flex h-8 items-center rounded-md border border-rose-200 px-3 text-sm text-rose-600 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-400 dark:hover:bg-rose-950"
                                         >
                                             <Trash2 className="mr-1 size-3" />
                                             Delete
@@ -399,27 +379,14 @@ export default function CategoriesIndex({
                                                 required
                                             />
                                         </div>
-                                        <div className="grid gap-2">
-                                            <Label>Icon</Label>
-                                            <Input
-                                                name="icon"
-                                                list="icon-options"
-                                                placeholder="tag"
-                                            />
-                                            <datalist id="icon-options">
-                                                {ICON_OPTIONS.map((icon) => (
-                                                    <option
-                                                        key={icon}
-                                                        value={icon}
-                                                    />
-                                                ))}
-                                            </datalist>
+                                        <div className="md:col-span-2">
+                                            <CategoryIconPicker />
                                         </div>
                                         <div className="md:col-span-2">
                                             <Button
                                                 type="submit"
+                                                variant="brand"
                                                 disabled={processing}
-                                                className="bg-violet-600 hover:bg-violet-700"
                                             >
                                                 Create Category
                                             </Button>

@@ -5,7 +5,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/currency';
+import { useCurrency } from '@/hooks/use-currency';
 
 type SavingsGoal = {
     id: number;
@@ -18,6 +18,7 @@ type SavingsGoal = {
 };
 
 export default function SavingsGoals({ goals }: { goals: SavingsGoal[] }) {
+    const { formatCurrency } = useCurrency();
     return (
         <Card className="gap-4 border-0 py-4 shadow-sm">
             <CardHeader className="pb-0">

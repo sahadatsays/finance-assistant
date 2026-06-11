@@ -6,7 +6,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/currency';
+import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
 
 type Transaction = {
@@ -23,6 +23,8 @@ export default function RecentTransactions({
 }: {
     transactions: Transaction[];
 }) {
+    const { formatCurrency } = useCurrency();
+
     return (
         <Card className="gap-4 border-0 py-4 shadow-sm">
             <CardHeader className="pb-0">

@@ -48,6 +48,19 @@ test('tenant member can view but cannot create categories', function () {
         ->assertForbidden();
 });
 
+test('category icon must be from allowed list', function () {
+    $owner = User::query()->where('email', 'owner@acme.com')->firstOrFail();
+
+    $this->actingAs($owner)
+        ->post(route('categories.store'), [
+            'name' => 'Invalid Icon',
+            'type' => CategoryType::Expense->value,
+            'color' => '#ff0000',
+            'icon' => 'not-a-real-icon',
+        ])
+        ->assertSessionHasErrors('icon');
+});
+
 test('tenant owner can create custom category', function () {
     $owner = User::query()->where('email', 'owner@acme.com')->firstOrFail();
 
@@ -62,6 +75,7 @@ test('tenant owner can create custom category', function () {
 
     $this->assertDatabaseHas('categories', [
         'name' => 'Side Hustle',
+        'icon' => 'wallet',
         'is_system' => false,
     ]);
 

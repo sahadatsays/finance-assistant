@@ -19,9 +19,10 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { formatCurrency } from '@/lib/currency';
+import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
 import { exportMethod as exportBudgets } from '@/routes/budgets';
 import {
@@ -142,6 +143,8 @@ function UtilizationCard({
     title: string;
     summary: BudgetSummary | null;
 }) {
+    const { formatCurrency } = useCurrency();
+
     if (summary === null) {
         return (
             <Card className="border-0 shadow-sm">
@@ -303,6 +306,7 @@ export default function BudgetsIndex({
     expenseCategories,
     permissions,
 }: Props) {
+    const { formatCurrency } = useCurrency();
     const [editing, setEditing] = useState<BudgetItem | null>(null);
 
     const alertItems = analytics.alerts.map((a) => ({
@@ -341,7 +345,7 @@ export default function BudgetsIndex({
                                 <DialogTrigger asChild>
                                     <Button
                                         size="sm"
-                                        className="bg-violet-600 hover:bg-violet-700"
+                                        variant="brand"
                                     >
                                         <Plus className="mr-2 size-4" />
                                         New Budget
@@ -389,9 +393,9 @@ export default function BudgetsIndex({
                                                     <Label>
                                                         Period Start (optional)
                                                     </Label>
-                                                    <Input
+                                                    <DatePicker
                                                         name="period_start"
-                                                        type="date"
+                                                        placeholder="Pick start date"
                                                     />
                                                 </div>
                                                 <BudgetLineFields
@@ -407,7 +411,7 @@ export default function BudgetsIndex({
                                                 <Button
                                                     type="submit"
                                                     disabled={processing}
-                                                    className="bg-violet-600 hover:bg-violet-700"
+                                                    variant="brand"
                                                 >
                                                     Create Budget
                                                 </Button>
@@ -634,7 +638,7 @@ export default function BudgetsIndex({
                                                                         disabled={
                                                                             processing
                                                                         }
-                                                                        className="bg-violet-600 hover:bg-violet-700"
+                                                                        variant="brand"
                                                                     >
                                                                         Save
                                                                         Changes

@@ -18,9 +18,10 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { formatCurrency } from '@/lib/currency';
+import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
 import { exportMethod as exportGoals } from '@/routes/goals';
 import {
@@ -168,6 +169,7 @@ export default function GoalsIndex({
     goalTypes,
     permissions,
 }: Props) {
+    const { formatCurrency } = useCurrency();
     const [editing, setEditing] = useState<GoalItem | null>(null);
     const [contributing, setContributing] = useState<GoalItem | null>(null);
 
@@ -209,7 +211,7 @@ export default function GoalsIndex({
                                 <DialogTrigger asChild>
                                     <Button
                                         size="sm"
-                                        className="bg-violet-600 hover:bg-violet-700"
+                                        variant="brand"
                                     >
                                         <Plus className="mr-2 size-4" />
                                         New Goal
@@ -264,9 +266,9 @@ export default function GoalsIndex({
                                                 </div>
                                                 <div className="grid gap-2">
                                                     <Label>Target Date</Label>
-                                                    <Input
+                                                    <DatePicker
                                                         name="target_date"
-                                                        type="date"
+                                                        placeholder="Pick target date"
                                                     />
                                                 </div>
                                                 <div className="grid gap-2">
@@ -297,7 +299,7 @@ export default function GoalsIndex({
                                                 <Button
                                                     type="submit"
                                                     disabled={processing}
-                                                    className="bg-violet-600 hover:bg-violet-700"
+                                                    variant="brand"
                                                 >
                                                     Create Goal
                                                 </Button>
@@ -530,7 +532,7 @@ export default function GoalsIndex({
                                                 <DialogTrigger asChild>
                                                     <Button
                                                         size="sm"
-                                                        className="bg-violet-600 hover:bg-violet-700"
+                                                        variant="brand"
                                                         onClick={() =>
                                                             setContributing(
                                                                 goal,
@@ -586,9 +588,9 @@ export default function GoalsIndex({
                                                                         <Label>
                                                                             Date
                                                                         </Label>
-                                                                        <Input
+                                                                        <DatePicker
                                                                             name="contributed_at"
-                                                                            type="date"
+                                                                            placeholder="Pick date"
                                                                         />
                                                                     </div>
                                                                     {errors.contribution && (
@@ -603,7 +605,7 @@ export default function GoalsIndex({
                                                                         disabled={
                                                                             processing
                                                                         }
-                                                                        className="bg-violet-600 hover:bg-violet-700"
+                                                                        variant="brand"
                                                                     >
                                                                         Add
                                                                         Contribution
@@ -715,13 +717,13 @@ export default function GoalsIndex({
                                                                             Target
                                                                             Date
                                                                         </Label>
-                                                                        <Input
+                                                                        <DatePicker
                                                                             name="target_date"
-                                                                            type="date"
                                                                             defaultValue={
                                                                                 goal.target_date ??
-                                                                                ''
+                                                                                undefined
                                                                             }
+                                                                            placeholder="Pick target date"
                                                                         />
                                                                     </div>
                                                                     <Button
@@ -729,7 +731,7 @@ export default function GoalsIndex({
                                                                         disabled={
                                                                             processing
                                                                         }
-                                                                        className="bg-violet-600 hover:bg-violet-700"
+                                                                        variant="brand"
                                                                     >
                                                                         Save
                                                                         Changes
