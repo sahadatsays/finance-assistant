@@ -88,4 +88,17 @@ See [transactions.md](./v1/transactions.md).
 
 See [budgets.md](./v1/budgets.md).
 
+## Savings Goals
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/goals` | Bearer + verified | List goals (filter, paginate) |
+| GET | `/api/v1/goals/{id}` | Bearer + verified | Show goal with progress and forecast |
+| POST | `/api/v1/goals` | Bearer + verified (owner) | Create goal |
+| PUT | `/api/v1/goals/{id}` | Bearer + verified (owner) | Update goal |
+| DELETE | `/api/v1/goals/{id}` | Bearer + verified (owner) | Delete goal |
+| POST | `/api/v1/goals/{id}/contribute` | Bearer + verified | Add contribution |
+
+See [goals.md](./v1/goals.md).
+
 Additional finance feature endpoints will be documented here as they are exposed.

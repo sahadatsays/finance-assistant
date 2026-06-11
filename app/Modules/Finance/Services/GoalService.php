@@ -8,6 +8,7 @@ use App\Models\Platform\Tenant;
 use App\Models\User;
 use App\Modules\Finance\Enums\GoalType;
 use App\Services\Platform\ActivityLogService;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +31,47 @@ class GoalService
             ->where('is_active', true)
             ->orderBy('target_date')
             ->get();
+    }
+
+    /**
+     * @param  array{type?: string, search?: string, sort?: string, direction?: string}  $filters
+     * @return LengthAwarePaginator<int, Goal>
+     */
+    public function paginateForTenant(Tenant $tenant, array $filters = [], int $perPage = 15): LengthAwarePaginator
+    {
+        $query = Goal::query()
+            ->with(['contributions' => fn ($q) => $q->orderByDesc('contributed_at')->limit(5)])
+            ->where('tenant_id', $tenant->id)
+            ->where('is_active', true);
+
+        if (! empty($filters['type'])) {
+            $query->where('type', $filters['type']);
+        }
+
+        if (! empty($filters['search'])) {
+            $query->where('name', 'like', '%'.$filters['search'].'%');
+        }
+
+        $allowedSorts = ['target_date', 'target_amount', 'current_amount', 'name', 'created_at'];
+        $sort = in_array($filters['sort'] ?? '', $allowedSorts, true)
+            ? $filters['sort']
+            : 'target_date';
+        $direction = in_array(strtolower($filters['direction'] ?? ''), ['asc', 'desc'], true)
+            ? strtolower($filters['direction'])
+            : 'asc';
+
+        return $query
+            ->orderBy($sort, $direction)
+            ->orderBy('id')
+            ->paginate($perPage);
+    }
+
+    public function findForTenant(Tenant $tenant, int $goalId): ?Goal
+    {
+        return Goal::query()
+            ->with(['contributions' => fn ($q) => $q->orderByDesc('contributed_at')])
+            ->where('tenant_id', $tenant->id)
+            ->find($goalId);
     }
 
     /**
