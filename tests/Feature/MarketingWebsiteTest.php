@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Platform\BlogPost;
 use App\Models\Platform\Plan;
 
 test('marketing home page renders', function () {
@@ -41,7 +42,21 @@ test('pricing page shows active plans from database', function () {
 test('blog article page renders for known slug', function () {
     $this->get(route('marketing.blog.show', 'how-to-start-budgeting'))
         ->assertSuccessful()
-        ->assertSee('How to Start Budgeting in 30 Minutes');
+        ->assertSee('How to Start Budgeting in 30 Minutes')
+        ->assertSee('List your income', false);
+});
+
+test('published blog post from database renders markdown body', function () {
+    BlogPost::factory()->published()->create([
+        'slug' => 'markdown-test-article',
+        'title' => 'Markdown Test Article',
+        'body' => "## Key takeaway\n\nTrack spending every week.",
+    ]);
+
+    $this->get(route('marketing.blog.show', 'markdown-test-article'))
+        ->assertSuccessful()
+        ->assertSee('Key takeaway')
+        ->assertSee('Track spending every week');
 });
 
 test('blog article returns not found for unknown slug', function () {

@@ -37,22 +37,20 @@ class MarketingController extends Controller
 
     public function blog(): View
     {
-        $posts = $this->content->publishedBlogPosts()->map(function (mixed $post): array {
-            if ($post instanceof BlogPost) {
-                return [
-                    'slug' => $post->slug,
-                    'title' => $post->title,
-                    'excerpt' => $post->excerpt,
-                    'category' => $post->category,
-                    'date' => $post->published_at?->toDateString() ?? $post->created_at?->toDateString(),
-                    'read_time' => "{$post->read_time_minutes} min",
-                ];
-            }
+        $category = request()->string('category')->trim()->toString();
 
-            return (array) $post;
-        });
+        $posts = $this->content->publishedBlogPosts()
+            ->when($category !== '', fn ($collection) => $collection->filter(
+                fn (mixed $post): bool => ($post instanceof BlogPost ? $post->category : $post->category) === $category,
+            ))
+            ->map(fn (mixed $post): array => $this->formatBlogPostSummary($post))
+            ->values();
 
-        return $this->view('marketing.blog', ['posts' => $posts]);
+        return $this->view('marketing.blog', [
+            'posts' => $posts,
+            'categories' => config('marketing.blog_categories', []),
+            'activeCategory' => $category,
+        ]);
     }
 
     public function blogShow(string $slug): View|RedirectResponse
@@ -65,21 +63,56 @@ class MarketingController extends Controller
 
         $isModel = $post instanceof BlogPost;
 
+        $formatted = $isModel ? $this->formatBlogPostDetail($post) : (array) $post;
+
         return $this->view('marketing.blog-show', [
-            'post' => $isModel ? [
+            'post' => $formatted,
+            'seo' => [
+                'title' => $isModel ? ($post->meta_title ?: $post->title) : ($post->title ?? ''),
+                'description' => $isModel
+                    ? ($post->meta_description ?: $post->excerpt ?: '')
+                    : ($post->excerpt ?? ''),
+            ],
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function formatBlogPostSummary(mixed $post): array
+    {
+        if ($post instanceof BlogPost) {
+            return [
                 'slug' => $post->slug,
                 'title' => $post->title,
                 'excerpt' => $post->excerpt,
                 'category' => $post->category,
                 'date' => $post->published_at?->toDateString() ?? $post->created_at?->toDateString(),
                 'read_time' => "{$post->read_time_minutes} min",
-                'body' => $post->body,
-            ] : (array) $post,
-            'seo' => [
-                'title' => $isModel ? $post->title : $post->title,
-                'description' => $isModel ? ($post->excerpt ?? '') : $post->excerpt,
-            ],
-        ]);
+                'featured_image_url' => $post->featuredImage?->url(),
+                'author_name' => $post->author?->name,
+            ];
+        }
+
+        return (array) $post;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function formatBlogPostDetail(BlogPost $post): array
+    {
+        return [
+            'slug' => $post->slug,
+            'title' => $post->title,
+            'excerpt' => $post->excerpt,
+            'category' => $post->category,
+            'date' => $post->published_at?->toDateString() ?? $post->created_at?->toDateString(),
+            'read_time' => "{$post->read_time_minutes} min",
+            'body' => $post->body,
+            'featured_image_url' => $post->featuredImage?->url(),
+            'author_name' => $post->author?->name,
+        ];
     }
 
     public function help(): View

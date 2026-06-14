@@ -4,7 +4,9 @@ namespace App\Models\Platform;
 
 use App\Enums\Website\ContentStatus;
 use App\Models\User;
+use Database\Factories\Platform\BlogPostFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -15,6 +17,8 @@ use Illuminate\Support\Carbon;
  * @property string $title
  * @property string|null $excerpt
  * @property string|null $body
+ * @property string|null $meta_title
+ * @property string|null $meta_description
  * @property string $category
  * @property ContentStatus $status
  * @property int $read_time_minutes
@@ -24,9 +28,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['slug', 'title', 'excerpt', 'body', 'category', 'status', 'read_time_minutes', 'featured_image_id', 'author_id', 'published_at'])]
+#[Fillable(['slug', 'title', 'excerpt', 'body', 'meta_title', 'meta_description', 'category', 'status', 'read_time_minutes', 'featured_image_id', 'author_id', 'published_at'])]
 class BlogPost extends Model
 {
+    /** @use HasFactory<BlogPostFactory> */
+    use HasFactory;
+
     /**
      * @return array<string, string>
      */

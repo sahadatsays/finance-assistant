@@ -95,6 +95,7 @@ class WebsiteContentService
     public function publishedBlogPosts(): Collection
     {
         $posts = BlogPost::query()
+            ->with(['featuredImage', 'author'])
             ->where('status', ContentStatus::Published)
             ->orderByDesc('published_at')
             ->get();
@@ -110,6 +111,7 @@ class WebsiteContentService
     public function publishedBlogPost(string $slug): BlogPost|\stdClass|null
     {
         $post = BlogPost::query()
+            ->with(['featuredImage', 'author'])
             ->where('slug', $slug)
             ->where('status', ContentStatus::Published)
             ->first();

@@ -150,11 +150,19 @@ return [
         ],
     ],
 
+    'blog_categories' => [
+        'Guides',
+        'Budgeting',
+        'Saving',
+        'Product Updates',
+    ],
+
     'blog_posts' => [
         [
             'slug' => 'how-to-start-budgeting',
             'title' => 'How to Start Budgeting in 30 Minutes',
             'excerpt' => 'A practical guide to setting up your first budget without overwhelm.',
+            'body' => "## Why start with 30 minutes?\n\nYou do not need a perfect spreadsheet to take control of your money. A simple first budget gives you clarity on where cash goes each month.\n\n## Step 1: List your income\n\nAdd salary, side income, and any recurring deposits. Use take-home pay when possible.\n\n## Step 2: Track fixed expenses\n\nRent, utilities, subscriptions, and loan payments usually stay predictable.\n\n## Step 3: Set flexible limits\n\nGroceries, dining, and entertainment are where most people adjust first.\n\n## Step 4: Review weekly\n\nSpend five minutes each week comparing actual spending to your plan. Small corrections beat big surprises.",
             'category' => 'Guides',
             'date' => '2026-05-15',
             'read_time' => '6 min',

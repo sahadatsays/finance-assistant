@@ -64,6 +64,7 @@ class WebsiteContentSeeder extends Seeder
                 [
                     'title' => $post['title'],
                     'excerpt' => $post['excerpt'],
+                    'body' => $post['body'] ?? null,
                     'category' => $post['category'],
                     'status' => ContentStatus::Published,
                     'read_time_minutes' => (int) str_replace(' min', '', $post['read_time']),

@@ -73,8 +73,12 @@ Route::prefix('admin')
             Route::post('plans/reorder', [PlanController::class, 'reorder'])->name('plans.reorder');
 
             Route::get('blog', [BlogPostController::class, 'index'])->name('blog.index');
+            Route::get('blog/create', [BlogPostController::class, 'create'])->name('blog.create');
             Route::post('blog', [BlogPostController::class, 'store'])->name('blog.store');
+            Route::get('blog/{blogPost}/edit', [BlogPostController::class, 'edit'])->name('blog.edit');
             Route::patch('blog/{blogPost}', [BlogPostController::class, 'update'])->name('blog.update');
+            Route::post('blog/{blogPost}/publish', [BlogPostController::class, 'publish'])->name('blog.publish');
+            Route::post('blog/{blogPost}/unpublish', [BlogPostController::class, 'unpublish'])->name('blog.unpublish');
             Route::delete('blog/{blogPost}', [BlogPostController::class, 'destroy'])->name('blog.destroy');
 
             Route::get('seo', [SeoEntryController::class, 'index'])->name('seo.index');
