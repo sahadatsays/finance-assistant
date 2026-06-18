@@ -31,6 +31,7 @@ import {
     Trash2,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 type Category = {
     id: number;
@@ -70,6 +71,16 @@ function resolveTab(filters: Props['filters']): Tab {
     return filters.type;
 }
 
+function firstValidationError(errors: Record<string, string | string[]>): string | null {
+    const first = Object.values(errors)[0];
+
+    if (Array.isArray(first)) {
+        return first[0] ?? null;
+    }
+
+    return first ?? null;
+}
+
 export default function CategoriesIndex({
     tenant,
     categories,
@@ -78,6 +89,7 @@ export default function CategoriesIndex({
 }: Props) {
     const tab = resolveTab(filters);
     const [editing, setEditing] = useState<Category | null>(null);
+    const [createFormKey, setCreateFormKey] = useState(0);
 
     const switchTab = (next: Tab) => {
         if (next === 'archived') {
@@ -280,7 +292,17 @@ export default function CategoriesIndex({
                         </CardHeader>
                         <CardContent>
                             <Form
+                                key={createFormKey}
                                 {...CategoryController.store.form()}
+                                resetOnSuccess={['name', 'color', 'icon']}
+                                onSuccess={() => setCreateFormKey((key) => key + 1)}
+                                onError={(errors) => {
+                                    const message = firstValidationError(errors);
+
+                                    if (message) {
+                                        toast.error(message);
+                                    }
+                                }}
                                 className="grid gap-4 md:grid-cols-2"
                             >
                                 {({ processing, errors }) => (
@@ -353,6 +375,13 @@ export default function CategoriesIndex({
                             {...CategoryController.update.form(editing.id)}
                             className="grid gap-4"
                             onSuccess={() => setEditing(null)}
+                            onError={(errors) => {
+                                const message = firstValidationError(errors);
+
+                                if (message) {
+                                    toast.error(message);
+                                }
+                            }}
                         >
                             {({ processing, errors }) => (
                                 <>

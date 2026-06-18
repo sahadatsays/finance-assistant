@@ -62,8 +62,12 @@ class CategoryController extends Controller
         try {
             $this->categories->create($tenant, $request->validated(), $request->user());
         } catch (InvalidArgumentException $exception) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $exception->getMessage()]);
+
             return back()->withErrors(['name' => $exception->getMessage()])->withInput();
         }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Category created successfully.')]);
 
         return redirect()->route('categories.index', [
             'type' => $request->validated('type'),
@@ -79,8 +83,12 @@ class CategoryController extends Controller
         try {
             $this->categories->update($category, $request->validated(), $request->user());
         } catch (InvalidArgumentException $exception) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $exception->getMessage()]);
+
             return back()->withErrors(['name' => $exception->getMessage()])->withInput();
         }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Category updated successfully.')]);
 
         return redirect()->route('categories.index', [
             'type' => $category->type->value,
@@ -96,8 +104,12 @@ class CategoryController extends Controller
         try {
             $this->categories->delete($category, $request->user());
         } catch (InvalidArgumentException $exception) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $exception->getMessage()]);
+
             return back()->withErrors(['category' => $exception->getMessage()]);
         }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Category deleted successfully.')]);
 
         return redirect()->route('categories.index', [
             'type' => $this->resolveRedirectType($request, $category),
@@ -112,6 +124,8 @@ class CategoryController extends Controller
 
         $this->categories->archive($category, $request->user());
 
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Category archived successfully.')]);
+
         return redirect()->route('categories.index', [
             'type' => $this->resolveRedirectType($request, $category),
         ]);
@@ -124,6 +138,8 @@ class CategoryController extends Controller
         $this->authorize('restore', $category);
 
         $this->categories->restore($category, $request->user());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Category restored successfully.')]);
 
         return redirect()->route('categories.index', ['archived' => 1]);
     }
