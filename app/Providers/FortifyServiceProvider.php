@@ -23,7 +23,7 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(LogoutResponseContract::class, LogoutResponse::class);
     }
 
     /**
@@ -34,7 +34,6 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureActions();
         $this->configureViews();
         $this->configureRateLimiting();
-        $this->configureResponses();
     }
 
     /**
@@ -115,13 +114,5 @@ class FortifyServiceProvider extends ServiceProvider
 
             return Limit::perMinute(10)->by($throttleKey);
         });
-    }
-
-    /**
-     * Configure custom response contracts.
-     */
-    private function configureResponses(): void
-    {
-        $this->app->bind(LogoutResponseContract::class, LogoutResponse::class);
     }
 }

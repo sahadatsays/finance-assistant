@@ -63,6 +63,21 @@ test('users can logout', function () {
     $this->assertGuest();
 });
 
+test('inertia logout redirects to login with external location', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)
+        ->post(route('logout'), [], [
+            'X-Inertia' => 'true',
+            'X-Requested-With' => 'XMLHttpRequest',
+        ]);
+
+    $response->assertStatus(409);
+    $response->assertHeader('X-Inertia-Location', route('login'));
+
+    $this->assertGuest();
+});
+
 test('users are rate limited', function () {
     $user = User::factory()->create();
 
