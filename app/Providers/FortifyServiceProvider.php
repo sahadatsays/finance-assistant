@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Http\Responses\Auth\LogoutResponse;
 use App\Services\Dev\OneClickLoginService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -12,6 +13,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
+use Laravel\Fortify\Contracts\LogoutResponse as LogoutResponseContract;
 use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
@@ -32,6 +34,7 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureActions();
         $this->configureViews();
         $this->configureRateLimiting();
+        $this->configureResponses();
     }
 
     /**
@@ -112,5 +115,13 @@ class FortifyServiceProvider extends ServiceProvider
 
             return Limit::perMinute(10)->by($throttleKey);
         });
+    }
+
+    /**
+     * Configure custom response contracts.
+     */
+    private function configureResponses(): void
+    {
+        $this->app->bind(LogoutResponseContract::class, LogoutResponse::class);
     }
 }
