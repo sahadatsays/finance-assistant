@@ -248,7 +248,13 @@ function BudgetLineFields({
     return (
         <div className="space-y-3">
             <Label>Category Budgets</Label>
-            {rows.map((row, index) => (
+            {rows.map((row, index) => {
+                const usedCategoryIds = rows
+                    .filter((_, rowIndex) => rowIndex !== index)
+                    .map((item) => item.category_id)
+                    .filter(Boolean);
+
+                return (
                 <div key={index} className="flex gap-2">
                     <select
                         name={`lines[${index}][category_id]`}
@@ -261,7 +267,11 @@ function BudgetLineFields({
                     >
                         <option value="">Select category</option>
                         {categories.map((c) => (
-                            <option key={c.id} value={c.id}>
+                            <option
+                                key={c.id}
+                                value={c.id}
+                                disabled={usedCategoryIds.includes(String(c.id))}
+                            >
                                 {c.name}
                             </option>
                         ))}
@@ -290,7 +300,8 @@ function BudgetLineFields({
                         </Button>
                     )}
                 </div>
-            ))}
+                );
+            })}
             <Button type="button" variant="outline" size="sm" onClick={addRow}>
                 <Plus className="mr-1 size-4" />
                 Add Category

@@ -101,6 +101,33 @@ test('tenant owner can create monthly budget with category lines', function () {
     ]);
 });
 
+test('budget update merges duplicate category lines instead of failing', function () {
+    $owner = User::query()->where('email', 'owner@acme.com')->firstOrFail();
+    $tenant = Tenant::query()->where('slug', 'acme-corp')->firstOrFail();
+
+    $budget = Budget::query()
+        ->where('tenant_id', $tenant->id)
+        ->where('name', 'Weekly Budget')
+        ->firstOrFail();
+
+    $groceries = Category::query()->where('tenant_id', $tenant->id)->where('name', 'Groceries')->firstOrFail();
+
+    $this->actingAs($owner)
+        ->put(route('budgets.update', $budget), [
+            'lines' => [
+                ['category_id' => $groceries->id, 'amount' => 100],
+                ['category_id' => $groceries->id, 'amount' => 150],
+            ],
+        ])
+        ->assertRedirect(route('budgets.index'));
+
+    $budget->refresh();
+
+    expect($budget->lines)->toHaveCount(1)
+        ->and((float) $budget->lines->first()->amount)->toBe(250.0)
+        ->and((float) $budget->amount)->toBe(250.0);
+});
+
 test('tenant owner can update and delete budget', function () {
     $owner = User::query()->where('email', 'owner@acme.com')->firstOrFail();
     $tenant = Tenant::query()->where('slug', 'acme-corp')->firstOrFail();

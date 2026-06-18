@@ -88,11 +88,12 @@ class BudgetService
             $periodType = BudgetPeriodType::from($data['period_type']);
             $period = $this->resolvePeriod($periodType, $data['period_start'] ?? null);
 
-            $this->validateLines($tenant, $data['lines']);
+            $lines = $this->normalizeLines($data['lines']);
+            $this->validateLines($tenant, $lines);
 
             $totalAmount = isset($data['amount'])
                 ? (float) $data['amount']
-                : collect($data['lines'])->sum(fn ($line) => (float) $line['amount']);
+                : collect($lines)->sum(fn ($line) => (float) $line['amount']);
 
             $budget = Budget::query()->create([
                 'tenant_id' => $tenant->id,
@@ -105,7 +106,7 @@ class BudgetService
                 'created_by' => $user->id,
             ]);
 
-            $this->syncLines($budget, $data['lines']);
+            $this->syncLines($budget, $lines);
 
             $this->activityLog->log(
                 "Budget \"{$budget->name}\" was created.",
@@ -131,11 +132,12 @@ class BudgetService
     {
         return DB::transaction(function () use ($budget, $data, $user): Budget {
             if (isset($data['lines'])) {
-                $this->validateLines($budget->tenant, $data['lines']);
-                $this->syncLines($budget, $data['lines']);
+                $lines = $this->normalizeLines($data['lines']);
+                $this->validateLines($budget->tenant, $lines);
+                $this->syncLines($budget, $lines);
 
                 if (! isset($data['amount'])) {
-                    $data['amount'] = collect($data['lines'])->sum(fn ($line) => (float) $line['amount']);
+                    $data['amount'] = collect($lines)->sum(fn ($line) => (float) $line['amount']);
                 }
             }
 
@@ -172,6 +174,22 @@ class BudgetService
                 tenant: $tenant,
             );
         });
+    }
+
+    /**
+     * @param  list<array{category_id: int, amount: float|string}>  $lines
+     * @return list<array{category_id: int, amount: float}>
+     */
+    private function normalizeLines(array $lines): array
+    {
+        return collect($lines)
+            ->groupBy(fn (array $line): int => (int) $line['category_id'])
+            ->map(fn (Collection $group, int|string $categoryId): array => [
+                'category_id' => (int) $categoryId,
+                'amount' => $group->sum(fn (array $line): float => (float) $line['amount']),
+            ])
+            ->values()
+            ->all();
     }
 
     /**
