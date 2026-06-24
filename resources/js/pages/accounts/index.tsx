@@ -19,6 +19,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCurrency } from '@/hooks/use-currency';
+import { formatCurrency } from '@/lib/currency';
 import { showValidationErrorToast } from '@/lib/form-errors';
 import { cn } from '@/lib/utils';
 import {
@@ -33,7 +34,7 @@ import {
     Trash2,
     Wallet,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 type AccountType = { value: string; label: string };
 
@@ -60,7 +61,14 @@ type Permissions = {
 type Props = {
     tenant: { id: number; name: string };
     accounts: AccountItem[];
-    summary: { total_balance: number; account_count: number };
+    summary: {
+        account_count: number;
+        by_currency: {
+            currency: string;
+            total_balance: number;
+            account_count: number;
+        }[];
+    };
     accountTypes: AccountType[];
     currencies: CurrencyOption[];
     permissions: Permissions;
@@ -162,10 +170,15 @@ export default function AccountsIndex({
     currencies,
     permissions,
 }: Props) {
-    const { formatCurrency, currency: workspaceCurrency } = useCurrency();
+    const { currency: workspaceCurrency } = useCurrency();
     const [editing, setEditing] = useState<AccountItem | null>(null);
     const [createOpen, setCreateOpen] = useState(false);
     const [createFormKey, setCreateFormKey] = useState(0);
+
+    const currencyLabels = useMemo(
+        () => new Map(currencies.map((currency) => [currency.code, currency])),
+        [currencies],
+    );
 
     const deleteAccount = (account: AccountItem) => {
         router.delete(AccountController.destroy.url(account.id));
@@ -255,23 +268,60 @@ export default function AccountsIndex({
                     </CardContent>
                 </Card>
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                    <Card className="border-0 shadow-sm">
-                        <CardHeader className="pb-2">
-                            <CardDescription>Total balance</CardDescription>
-                            <CardTitle className="text-2xl">
-                                {formatCurrency(summary.total_balance)}
-                            </CardTitle>
-                        </CardHeader>
-                    </Card>
-                    <Card className="border-0 shadow-sm">
-                        <CardHeader className="pb-2">
-                            <CardDescription>Active accounts</CardDescription>
-                            <CardTitle className="text-2xl">
-                                {summary.account_count}
-                            </CardTitle>
-                        </CardHeader>
-                    </Card>
+                <div className="space-y-3">
+                    <p className="text-sm font-medium text-muted-foreground">
+                        Total balance by currency
+                    </p>
+                    <div
+                        className={cn(
+                            'grid gap-4',
+                            summary.by_currency.length > 0
+                                ? 'sm:grid-cols-2 lg:grid-cols-3'
+                                : 'sm:grid-cols-2',
+                        )}
+                    >
+                        {summary.by_currency.map((item) => {
+                            const meta = currencyLabels.get(item.currency);
+
+                            return (
+                                <Card
+                                    key={item.currency}
+                                    className="border-0 shadow-sm"
+                                >
+                                    <CardHeader className="pb-2">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <CardDescription>
+                                                {meta?.label ?? item.currency}
+                                            </CardDescription>
+                                            <Badge variant="secondary">
+                                                {item.currency}
+                                            </Badge>
+                                        </div>
+                                        <CardTitle className="text-2xl">
+                                            {formatCurrency(
+                                                item.total_balance,
+                                                item.currency,
+                                            )}
+                                        </CardTitle>
+                                        <p className="text-xs text-muted-foreground">
+                                            {item.account_count}{' '}
+                                            {item.account_count === 1
+                                                ? 'account'
+                                                : 'accounts'}
+                                        </p>
+                                    </CardHeader>
+                                </Card>
+                            );
+                        })}
+                        <Card className="border-0 shadow-sm">
+                            <CardHeader className="pb-2">
+                                <CardDescription>Active accounts</CardDescription>
+                                <CardTitle className="text-2xl">
+                                    {summary.account_count}
+                                </CardTitle>
+                            </CardHeader>
+                        </Card>
+                    </div>
                 </div>
 
                 {accounts.length === 0 ? (
@@ -331,7 +381,10 @@ export default function AccountsIndex({
                                                 'text-red-600',
                                         )}
                                     >
-                                        {formatCurrency(account.balance)}
+                                        {formatCurrency(
+                                            account.balance,
+                                            account.currency,
+                                        )}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                         {account.transactions_count}{' '}

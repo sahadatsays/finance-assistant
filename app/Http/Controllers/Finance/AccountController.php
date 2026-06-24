@@ -38,6 +38,17 @@ class AccountController extends Controller
         $accountList = $this->accounts->listForTenant($tenant);
         $resolvedAccounts = AccountResource::collection($accountList)->resolve();
 
+        $byCurrency = collect($resolvedAccounts)
+            ->groupBy('currency')
+            ->map(fn ($group, string $currency) => [
+                'currency' => $currency,
+                'total_balance' => (float) $group->sum('balance'),
+                'account_count' => $group->count(),
+            ])
+            ->sortBy('currency')
+            ->values()
+            ->all();
+
         return Inertia::render('accounts/index', [
             'tenant' => [
                 'id' => $tenant->id,
@@ -45,8 +56,8 @@ class AccountController extends Controller
             ],
             'accounts' => $resolvedAccounts,
             'summary' => [
-                'total_balance' => collect($resolvedAccounts)->sum('balance'),
                 'account_count' => count($resolvedAccounts),
+                'by_currency' => $byCurrency,
             ],
             'accountTypes' => collect(AccountType::cases())->map(fn (AccountType $type) => [
                 'value' => $type->value,

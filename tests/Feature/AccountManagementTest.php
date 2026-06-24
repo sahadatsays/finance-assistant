@@ -28,7 +28,9 @@ test('tenant owner can view accounts page with demo accounts', function () {
             ->has('accounts', 2)
             ->where('permissions.create', true)
             ->where('permissions.update', true)
-            ->has('accountTypes', 4));
+            ->has('accountTypes', 4)
+            ->has('summary.by_currency', 1)
+            ->where('summary.by_currency.0.currency', 'USD'));
 });
 
 test('tenant member can view but cannot manage accounts', function () {
