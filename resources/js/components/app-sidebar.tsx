@@ -5,6 +5,7 @@ import {
     PieChart,
     Tags,
     Target,
+    Wallet,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -21,6 +22,7 @@ import {
 import { index as budgetsIndex } from '@/routes/budgets';
 import { index as goalsIndex } from '@/routes/goals';
 import { index as categoriesIndex } from '@/routes/categories';
+import { index as accountsIndex } from '@/routes/accounts';
 import { index as transactionsIndex } from '@/routes/transactions';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
@@ -35,6 +37,11 @@ const mainNavItems: NavItem[] = [
         title: 'Categories',
         href: categoriesIndex(),
         icon: Tags,
+    },
+    {
+        title: 'Accounts',
+        href: accountsIndex(),
+        icon: Wallet,
     },
     {
         title: 'Transactions',

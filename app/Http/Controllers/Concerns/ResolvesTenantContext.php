@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Concerns;
 
+use App\Models\Finance\Account;
 use App\Models\Finance\Category;
 use App\Models\Finance\Transaction;
 use App\Models\Platform\Tenant;
@@ -19,6 +20,13 @@ trait ResolvesTenantContext
         }
 
         return $tenant;
+    }
+
+    protected function assertAccountBelongsToTenant(Account $account, Tenant $tenant): void
+    {
+        if ($account->tenant_id !== $tenant->id) {
+            abort(404);
+        }
     }
 
     protected function assertCategoryBelongsToTenant(Category $category, Tenant $tenant): void

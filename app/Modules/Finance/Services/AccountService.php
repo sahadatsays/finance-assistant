@@ -24,6 +24,7 @@ class AccountService
         return Account::query()
             ->where('tenant_id', $tenant->id)
             ->where('is_active', true)
+            ->withCount('transactions')
             ->orderBy('name')
             ->get();
     }
