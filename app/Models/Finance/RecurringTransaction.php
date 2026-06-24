@@ -4,25 +4,31 @@ namespace App\Models\Finance;
 
 use App\Models\Platform\Tenant;
 use App\Models\User;
+use App\Modules\Finance\Enums\RecurrenceFrequency;
 use App\Modules\Finance\Enums\TransactionType;
+use Database\Factories\Finance\RecurringTransactionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int $tenant_id
- * @property int $account_id
- * @property int|null $transfer_account_id
- * @property int|null $category_id
- * @property int|null $recurring_transaction_id
+ * @property string $name
  * @property TransactionType $type
  * @property string $amount
+ * @property int $account_id
+ * @property int $category_id
+ * @property RecurrenceFrequency $frequency
+ * @property string $run_time
+ * @property Carbon $start_date
+ * @property Carbon $next_run_at
+ * @property Carbon|null $last_run_at
  * @property string|null $notes
- * @property Carbon $occurred_at
+ * @property bool $is_active
  * @property int|null $created_by
  * @property int|null $updated_by
  * @property Carbon|null $created_at
@@ -30,19 +36,26 @@ use Illuminate\Support\Carbon;
  */
 #[Fillable([
     'tenant_id',
-    'account_id',
-    'transfer_account_id',
-    'category_id',
-    'recurring_transaction_id',
+    'name',
     'type',
     'amount',
+    'account_id',
+    'category_id',
+    'frequency',
+    'run_time',
+    'start_date',
+    'next_run_at',
+    'last_run_at',
     'notes',
-    'occurred_at',
+    'is_active',
     'created_by',
     'updated_by',
 ])]
-class Transaction extends Model
+class RecurringTransaction extends Model
 {
+    /** @use HasFactory<RecurringTransactionFactory> */
+    use HasFactory;
+
     /**
      * @return array<string, string>
      */
@@ -51,7 +64,11 @@ class Transaction extends Model
         return [
             'type' => TransactionType::class,
             'amount' => 'decimal:2',
-            'occurred_at' => 'datetime',
+            'frequency' => RecurrenceFrequency::class,
+            'start_date' => 'date',
+            'next_run_at' => 'datetime',
+            'last_run_at' => 'datetime',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -72,27 +89,11 @@ class Transaction extends Model
     }
 
     /**
-     * @return BelongsTo<Account, $this>
-     */
-    public function transferAccount(): BelongsTo
-    {
-        return $this->belongsTo(Account::class, 'transfer_account_id');
-    }
-
-    /**
      * @return BelongsTo<Category, $this>
      */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
-    }
-
-    /**
-     * @return BelongsTo<RecurringTransaction, $this>
-     */
-    public function recurringTransaction(): BelongsTo
-    {
-        return $this->belongsTo(RecurringTransaction::class);
     }
 
     /**
@@ -104,26 +105,10 @@ class Transaction extends Model
     }
 
     /**
-     * @return BelongsTo<User, $this>
+     * @return HasMany<Transaction, $this>
      */
-    public function updater(): BelongsTo
+    public function transactions(): HasMany
     {
-        return $this->belongsTo(User::class, 'updated_by');
-    }
-
-    /**
-     * @return BelongsToMany<Tag, $this>
-     */
-    public function tags(): BelongsToMany
-    {
-        return $this->belongsToMany(Tag::class);
-    }
-
-    /**
-     * @return HasMany<Attachment, $this>
-     */
-    public function attachments(): HasMany
-    {
-        return $this->hasMany(Attachment::class);
+        return $this->hasMany(Transaction::class);
     }
 }

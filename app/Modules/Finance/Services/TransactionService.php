@@ -139,6 +139,7 @@ class TransactionService
                 'account_id' => $data['account_id'],
                 'transfer_account_id' => $data['transfer_account_id'] ?? null,
                 'category_id' => $data['category_id'] ?? null,
+                'recurring_transaction_id' => $data['recurring_transaction_id'] ?? null,
                 'type' => $type,
                 'amount' => $data['amount'],
                 'notes' => $data['notes'] ?? null,

@@ -19,6 +19,7 @@ require __DIR__.'/settings.php';
 require __DIR__.'/categories.php';
 require __DIR__.'/accounts.php';
 require __DIR__.'/transactions.php';
+require __DIR__.'/recurring-transactions.php';
 require __DIR__.'/budgets.php';
 require __DIR__.'/goals.php';
 require __DIR__.'/admin-web.php';

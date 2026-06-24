@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import {
     ArrowLeftRight,
+    CalendarClock,
     LayoutGrid,
     PieChart,
     Tags,
@@ -24,6 +25,7 @@ import { index as goalsIndex } from '@/routes/goals';
 import { index as categoriesIndex } from '@/routes/categories';
 import { index as accountsIndex } from '@/routes/accounts';
 import { index as transactionsIndex } from '@/routes/transactions';
+import { index as recurringTransactionsIndex } from '@/routes/recurring-transactions';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 
@@ -47,6 +49,11 @@ const mainNavItems: NavItem[] = [
         title: 'Transactions',
         href: transactionsIndex(),
         icon: ArrowLeftRight,
+    },
+    {
+        title: 'Scheduled',
+        href: recurringTransactionsIndex(),
+        icon: CalendarClock,
     },
     {
         title: 'Budgets',
