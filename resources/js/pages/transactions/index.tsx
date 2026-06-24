@@ -21,6 +21,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCurrency } from '@/hooks/use-currency';
+import { showValidationErrorToast } from '@/lib/form-errors';
 import { cn } from '@/lib/utils';
 import { exportMethod as exportTransactions } from '@/routes/transactions';
 import {
@@ -160,6 +161,7 @@ export default function TransactionsIndex({
                                         encType="multipart/form-data"
                                         className="grid gap-4 md:grid-cols-2"
                                         onSuccess={() => setCreateOpen(false)}
+                                        onError={showValidationErrorToast}
                                     >
                                         {({ processing, errors }) => (
                                             <>
@@ -423,6 +425,7 @@ export default function TransactionsIndex({
                                                         onSuccess={() =>
                                                             setEditing(null)
                                                         }
+                                                        onError={showValidationErrorToast}
                                                     >
                                                         {({
                                                             processing,

@@ -23,6 +23,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCurrency } from '@/hooks/use-currency';
+import { showValidationErrorToast } from '@/lib/form-errors';
 import { cn } from '@/lib/utils';
 import { exportMethod as exportBudgets } from '@/routes/budgets';
 import {
@@ -369,6 +370,7 @@ export default function BudgetsIndex({
                                     <Form
                                         {...BudgetController.store.form()}
                                         className="space-y-4"
+                                        onError={showValidationErrorToast}
                                     >
                                         {({ processing, errors }) => (
                                             <>
@@ -611,6 +613,7 @@ export default function BudgetsIndex({
                                                                 budget.id,
                                                             )}
                                                             className="space-y-4"
+                                                            onError={showValidationErrorToast}
                                                         >
                                                             {({
                                                                 processing,

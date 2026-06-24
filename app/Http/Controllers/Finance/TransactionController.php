@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Http\Controllers\Concerns\FlashesToastMessages;
 use App\Http\Controllers\Concerns\ResolvesTenantContext;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\StoreTransactionRequest;
@@ -26,6 +27,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TransactionController extends Controller
 {
+    use FlashesToastMessages;
     use ResolvesTenantContext;
 
     public function __construct(
@@ -88,8 +90,12 @@ class TransactionController extends Controller
                 $request->file('attachment'),
             );
         } catch (InvalidArgumentException $exception) {
+            $this->flashError($exception->getMessage());
+
             return back()->withErrors(['transaction' => $exception->getMessage()])->withInput();
         }
+
+        $this->flashSuccess(__('Transaction created successfully.'));
 
         return redirect()->route('transactions.index');
     }
@@ -108,8 +114,12 @@ class TransactionController extends Controller
                 $request->file('attachment'),
             );
         } catch (InvalidArgumentException $exception) {
+            $this->flashError($exception->getMessage());
+
             return back()->withErrors(['transaction' => $exception->getMessage()])->withInput();
         }
+
+        $this->flashSuccess(__('Transaction updated successfully.'));
 
         return redirect()->route('transactions.index');
     }
@@ -121,6 +131,8 @@ class TransactionController extends Controller
         $this->authorize('delete', $transaction);
 
         $this->transactions->delete($transaction, $request->user());
+
+        $this->flashSuccess(__('Transaction deleted successfully.'));
 
         return redirect()->route('transactions.index');
     }

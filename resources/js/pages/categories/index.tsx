@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { index as categoriesIndex } from '@/routes/categories';
+import { showValidationErrorToast } from '@/lib/form-errors';
 import {
     Archive,
     ArchiveRestore,
@@ -31,7 +32,6 @@ import {
     Trash2,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { toast } from 'sonner';
 
 type Category = {
     id: number;
@@ -69,16 +69,6 @@ function resolveTab(filters: Props['filters']): Tab {
     }
 
     return filters.type;
-}
-
-function firstValidationError(errors: Record<string, string | string[]>): string | null {
-    const first = Object.values(errors)[0];
-
-    if (Array.isArray(first)) {
-        return first[0] ?? null;
-    }
-
-    return first ?? null;
 }
 
 export default function CategoriesIndex({
@@ -296,13 +286,7 @@ export default function CategoriesIndex({
                                 {...CategoryController.store.form()}
                                 resetOnSuccess={['name', 'color', 'icon']}
                                 onSuccess={() => setCreateFormKey((key) => key + 1)}
-                                onError={(errors) => {
-                                    const message = firstValidationError(errors);
-
-                                    if (message) {
-                                        toast.error(message);
-                                    }
-                                }}
+                                onError={showValidationErrorToast}
                                 className="grid gap-4 md:grid-cols-2"
                             >
                                 {({ processing, errors }) => (
@@ -375,13 +359,7 @@ export default function CategoriesIndex({
                             {...CategoryController.update.form(editing.id)}
                             className="grid gap-4"
                             onSuccess={() => setEditing(null)}
-                            onError={(errors) => {
-                                const message = firstValidationError(errors);
-
-                                if (message) {
-                                    toast.error(message);
-                                }
-                            }}
+                            onError={showValidationErrorToast}
                         >
                             {({ processing, errors }) => (
                                 <>

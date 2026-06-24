@@ -28,6 +28,8 @@ class SessionController extends Controller
     public function destroy(Request $request, string $session): RedirectResponse
     {
         if (! $this->sessions->revokeSession($request->user(), $session, $request)) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('Unable to revoke session.')]);
+
             return back()->withErrors([
                 'session' => __('Unable to revoke session.'),
             ]);

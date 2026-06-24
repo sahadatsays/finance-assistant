@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Http\Controllers\Concerns\FlashesToastMessages;
 use App\Http\Controllers\Concerns\ResolvesTenantContext;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\StoreGoalContributionRequest;
@@ -26,6 +27,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class GoalController extends Controller
 {
+    use FlashesToastMessages;
     use ResolvesTenantContext;
 
     public function __construct(
@@ -63,8 +65,12 @@ class GoalController extends Controller
         try {
             $this->goals->create($tenant, $request->validated(), $request->user());
         } catch (InvalidArgumentException $exception) {
+            $this->flashError($exception->getMessage());
+
             return back()->withErrors(['goal' => $exception->getMessage()])->withInput();
         }
+
+        $this->flashSuccess(__('Savings goal created successfully.'));
 
         return redirect()->route('goals.index');
     }
@@ -77,6 +83,8 @@ class GoalController extends Controller
 
         $this->goals->update($goal, $request->validated(), $request->user());
 
+        $this->flashSuccess(__('Savings goal updated successfully.'));
+
         return redirect()->route('goals.index');
     }
 
@@ -87,6 +95,8 @@ class GoalController extends Controller
         $this->authorize('delete', $goal);
 
         $this->goals->delete($goal, $request->user());
+
+        $this->flashSuccess(__('Savings goal deleted successfully.'));
 
         return redirect()->route('goals.index');
     }
@@ -100,8 +110,12 @@ class GoalController extends Controller
         try {
             $this->goals->addContribution($goal, $request->validated(), $request->user());
         } catch (InvalidArgumentException $exception) {
+            $this->flashError($exception->getMessage());
+
             return back()->withErrors(['contribution' => $exception->getMessage()])->withInput();
         }
+
+        $this->flashSuccess(__('Contribution added successfully.'));
 
         return redirect()->route('goals.index');
     }
@@ -118,6 +132,8 @@ class GoalController extends Controller
         $this->authorize('contribute', $goal);
 
         $this->goals->deleteContribution($contribution, $request->user());
+
+        $this->flashSuccess(__('Contribution removed successfully.'));
 
         return redirect()->route('goals.index');
     }

@@ -49,6 +49,8 @@ class DeviceController extends Controller
         abort_unless($device->user_id === $request->user()->id, 403);
 
         if ($device->session_id === $request->session()->getId()) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('You cannot revoke your current device.')]);
+
             return back()->withErrors([
                 'device' => __('You cannot revoke your current device.'),
             ]);

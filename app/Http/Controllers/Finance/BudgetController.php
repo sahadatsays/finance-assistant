@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Http\Controllers\Concerns\FlashesToastMessages;
 use App\Http\Controllers\Concerns\ResolvesTenantContext;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\StoreBudgetRequest;
@@ -26,6 +27,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BudgetController extends Controller
 {
+    use FlashesToastMessages;
     use ResolvesTenantContext;
 
     public function __construct(
@@ -67,8 +69,12 @@ class BudgetController extends Controller
         try {
             $this->budgets->create($tenant, $request->validated(), $request->user());
         } catch (InvalidArgumentException $exception) {
+            $this->flashError($exception->getMessage());
+
             return back()->withErrors(['budget' => $exception->getMessage()])->withInput();
         }
+
+        $this->flashSuccess(__('Budget created successfully.'));
 
         return redirect()->route('budgets.index');
     }
@@ -82,8 +88,12 @@ class BudgetController extends Controller
         try {
             $this->budgets->update($budget, $request->validated(), $request->user());
         } catch (InvalidArgumentException $exception) {
+            $this->flashError($exception->getMessage());
+
             return back()->withErrors(['budget' => $exception->getMessage()])->withInput();
         }
+
+        $this->flashSuccess(__('Budget updated successfully.'));
 
         return redirect()->route('budgets.index');
     }
@@ -95,6 +105,8 @@ class BudgetController extends Controller
         $this->authorize('delete', $budget);
 
         $this->budgets->delete($budget, $request->user());
+
+        $this->flashSuccess(__('Budget deleted successfully.'));
 
         return redirect()->route('budgets.index');
     }

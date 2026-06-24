@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
+import { showValidationErrorToast } from '@/lib/form-errors';
 import { exportMethod as exportGoals } from '@/routes/goals';
 import {
     Calendar,
@@ -226,6 +227,7 @@ export default function GoalsIndex({
                                     <Form
                                         {...GoalController.store.form()}
                                         className="space-y-4"
+                                        onError={showValidationErrorToast}
                                     >
                                         {({ processing, errors }) => (
                                             <>
@@ -557,6 +559,7 @@ export default function GoalsIndex({
                                                                 goal.id,
                                                             )}
                                                             className="space-y-4"
+                                                            onError={showValidationErrorToast}
                                                         >
                                                             {({
                                                                 processing,
@@ -651,6 +654,7 @@ export default function GoalsIndex({
                                                                 goal.id,
                                                             )}
                                                             className="space-y-4"
+                                                            onError={showValidationErrorToast}
                                                         >
                                                             {({ processing }) => (
                                                                 <>
